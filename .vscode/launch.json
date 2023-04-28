@@ -8,7 +8,7 @@
             "name": "F5 Anything: Custom Command",
             "type": "f5anything",
             "request": "launch",
-            "command": "q \n gcc hello.c && gdb -q --command test.py",
+            "command": "q \n gcc -g hello.c && gdb -q --command test.py",
         }
     ]
 }

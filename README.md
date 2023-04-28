@@ -26,7 +26,7 @@ TODO:
 
 current execution command:
 ```
-q \n gcc hello.c && gdb -q --command test.py
+q \n gcc -g hello.c && gdb -q --command test.py
 ```
 put it into [F5 Anything](https://marketplace.visualstudio.com/items?itemName=discretegames.f5anything)
 

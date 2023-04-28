@@ -15,8 +15,8 @@ class gdbHandler():
     def setup(self):
         gdb.execute("file " + self.fileName)
         gdb.execute("set pagination off")
-        #gdb.execute("starti")
-        #gdb.execute("break main")
+        #gdb.execute("starti") # very begginnig of the program
+        #gdb.execute("break main") # at main loop
 
     def setBreakPoint(self, place):
         if type(place) is int:
