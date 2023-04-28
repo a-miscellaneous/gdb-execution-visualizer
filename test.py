@@ -19,21 +19,9 @@ class gdbHandler():
         #gdb.execute("break main") # at main loop
 
     def setBreakPoint(self, place):
-        if type(place) is int:
-            exe = self.cName + ":" + str(place)
-            print(exe)
-            gdb.execute("break " + exe)
-            return
-
-        if type(place) is str:
-            exe = place
-            print(exe)
-            gdb.execute("break " + exe)
-            return
-
-        #self.breaks.append(gdb.Breakpoint(exe))
-
-
+        #if int build a line break statement else just simple break
+        exe = self.cName + ":" + str(place) if type(place) is int else place
+        gdb.execute("break " + exe)
 
 
     def showLocalVariables(self):
@@ -41,6 +29,8 @@ class gdbHandler():
         self.frame = gdb.selected_frame()
         self.block = self.frame.block()
         gdb.execute("info locals")
+        #gdb.execute("info args")
+        #gdb.execute("info variables")
 
     def run(self):
         gdb.execute("run")
@@ -51,29 +41,9 @@ class gdbHandler():
 
 
 if __name__ == "__main__":
-    print("### main ###")
     gdbHandler = gdbHandler("a.out", "hello.c")
-    gdbHandler.setBreakPoint(7)
+    gdbHandler.setBreakPoint(8)
     gdbHandler.run()
     gdbHandler.showLocalVariables()
     gdbHandler.quit()
-
-
-
-
-
-
-
-#gdb.execute("info variables")
-#gdb.execute("info locals")
-#gdb.execute("info args")
-
-
-
-
-
-
-
-
-
 
