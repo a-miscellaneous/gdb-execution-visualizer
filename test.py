@@ -4,7 +4,7 @@ class gdbHandler():
 
 
     def __init__(self, fName, cName):
-        self.breaks = []
+
 
         print("### initialising gdbHandler ###")
         self.fileName = fName
@@ -31,6 +31,31 @@ class gdbHandler():
         gdb.execute("info locals")
         #gdb.execute("info args")
         #gdb.execute("info variables")
+        self.test()
+
+    def test(self):
+        print('### test ###')
+        self.print_variables_in_current_line()
+
+    def stepFin(self):
+        gdb.execute("s")
+        gdb.execute("fin")
+
+    def print_variables_in_current_line(self):
+        # Get the line table for the current frame
+        #line_table = self.frame.find_sal().symtab.linetable
+
+
+        # Get the line number for the current frame
+        line = self.frame.find_sal().line
+        print("line: ", line)
+        # Iterate over all variables in the current function
+        block = gdb.block_for_pc(self.frame.pc())
+        for sym in block:
+            if sym.is_variable and sym.line == line:
+
+                var = gdb.parse_and_eval(sym.name)
+                print(sym.name, '=', var)
 
     def run(self):
         gdb.execute("run")
