@@ -7,6 +7,7 @@
 * Python 3.x (maybe)
 * GDB
 * GCC/c compiler
+* rr
 
 #### GDB
 should be compiled for use with python, check
@@ -16,6 +17,12 @@ gdb --configuration
 for 
 ```
 --with-python=/usr
+```
+
+#### rr
+do this:
+```
+sudo sysctl -w kernel.perf_event_paranoid=1
 ```
 
 
