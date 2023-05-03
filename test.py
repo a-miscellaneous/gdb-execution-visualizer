@@ -4,8 +4,7 @@ class gdbHandler():
     lineHistory = []
     globalHistory = dict()
 
-
-    #TODO: find a way to delete BREAKpoints directly after they have been set SOLUTION: temporary=True?
+    #TODO: dynamic amount of variables per line
     #TODO: get the given variables from a function call
     #TODO: does a variable get discovered even if it isn't assigned but just part of a function call?
     #TODO: values are sometimes initialized with 0 so setting them to zero doesn't trigger a watchpoint
@@ -31,15 +30,15 @@ class gdbHandler():
         gdb.Breakpoint(exe, gdb.BP_BREAKPOINT, temporary=True)
         gdb.execute("break " + exe)
 
-    #to stop directly after a value is assigned
+
     def setWatchPoint(self, varName):
         print("### setting watchpoint ###")
-        # TODO: test
 
-        #gdb.execute("watch {}", varName)
-        watchP = gdb.Breakpoint(varName, gdb.BP_WATCHPOINT, temporary=True)
+        # have to otherwise can't get an access watchpoint
+        gdb.execute("awatch {}".format(varName))
+        gdb.execute("commands\nsilent\nend")
+        #watchP = gdb.Breakpoint(varName, type=gdb.WP_ACCESS, temporary=True)
 
-        print('set Watchpoint  ' , watchP)
 
     #important if the current line doesnt have a var just step to next
     def step(self):
@@ -68,14 +67,15 @@ class gdbHandler():
 
 
     def analyzeLine(self):
+        self.deleteAllBreakpoints()
         self.updateLocals()
         self.findVarInLine()
         print('found variable: ' + self.var.name)
         self.setWatchPoint(self.var.name)
         self.continueExecution()
         value = self.getVarValue(self.var.name)
-        print(self.var.name , '=' , value)
-        self.deleteAllBreakpoints()
+        print(self.line , self.var.name , '=' , value)
+
 
 
     def getVarValue(self, varName):
@@ -105,6 +105,11 @@ if __name__ == "__main__":
     gdbHandler.setBreakPoint(9)
     gdbHandler.run()
     gdbHandler.analyzeLine()
+    while True:
+        try:
+            gdbHandler.analyzeLine()
+        except:
+            break
 
     gdbHandler.quit()
 
