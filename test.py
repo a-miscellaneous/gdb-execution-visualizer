@@ -7,10 +7,10 @@ class lineHistory():
     def __init__(self, line, var, value):
         self.line = line
         self.var = var
-        self.values = [value]
+        self.values = [str(value)]
 
     def append(self, value):
-        self.values.append(value)
+        self.values.append(str(value))
 
     def __str__(self):
         return "line: {} var: {} values: {}".format(self.line, self.var, self.values)
@@ -58,7 +58,6 @@ class gdbHandler():
         for sym in self.block: #if local scope
             if sym.is_variable and sym.line == self.line:
                 print("### found variable {} ###".format(sym.name))
-                self.var = sym
                 return sym.name
 
         #attempt regex match
@@ -79,17 +78,18 @@ class gdbHandler():
             self.next()
             return
 
-        self.setWatchPoint(self.var.name)
+        self.setWatchPoint(foundVar)
         self.continueExecution()
-        value = self.getVarValue(self.var.name)
-        self.addToHistory(int(self.line), self.var.name, value)
+        value = self.getVarValue(foundVar)
+        self.addToHistory(int(self.line), foundVar, value)
 
-    def addToHistory(self, line, var, value):
+    def addToHistory(self, line : int, var : str, value):
         self.lineHistorys.append(line)
         if self.globalHistory.get(line) is None:
+            print("### creating new lineHistory ###")
             self.globalHistory[line] = lineHistory(line, var, value)
             return
-        self.globalHistory[line].append( str(value) )
+        self.globalHistory[line].append( value )
 
     def getVarValue(self, varName):
         return gdb.parse_and_eval(varName)
@@ -102,7 +102,7 @@ class gdbHandler():
         gdb.execute("quit")
 
     def continueExecution(self):
-        print("### continuing execution ###")
+        #print("### continuing execution ###")
         gdb.execute("continue")
 
     def step(self):
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     gdbHandler = gdbHandler("a.out", "hello.c")
     gdbHandler.setBreakPoint(7)
     gdbHandler.run()
-
+    gdbHandler.analyzeLine()
     while True:
         try:
             gdbHandler.analyzeLine()
@@ -134,7 +134,7 @@ if __name__ == "__main__":
             break
 
     print("### printing history ###")
-    for line in gdbHandler.lineHistorys:
+    for line in gdbHandler.globalHistory:
         print(gdbHandler.globalHistory[line])
 
     gdbHandler.quit()
