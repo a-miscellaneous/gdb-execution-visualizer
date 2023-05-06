@@ -1,0 +1,84 @@
+### initialising gdbHandler ###
+### setting breakpoint ###
+Temporary breakpoint 1 at 0x1155: file hello.c, line 7.
+### running program ###
+
+Temporary breakpoint 1, main () at hello.c:7
+7	    int num = 12345;
+### analyzing line ###
+### found variable ###
+Hardware watchpoint 2: num
+
+Hardware watchpoint 2: num
+
+Old value = -9472
+New value = 12345
+main () at hello.c:8
+8	    int rev = 1;
+found variable:  7 num = 12345
+
+### analyzing line ###
+### found variable ###
+Hardware watchpoint 3: rev
+
+Hardware watchpoint 3: rev
+
+Old value = 32767
+New value = 1
+main () at hello.c:9
+9	    int rem = 0;
+found variable:  8 rev = 1
+
+### analyzing line ###
+### found variable ###
+Hardware watchpoint 4: rem
+
+Hardware watchpoint 4: rem
+
+Old value = 0
+New value = 5
+main () at hello.c:14
+14	        rev = rev * 10 + rem;
+found variable:  9 rem = 5
+
+### analyzing line ###
+### no variable found ###
+
+Hardware watchpoint 3: rev
+
+Old value = 1
+New value = 15
+main () at hello.c:15
+15	        num /= 10;
+### analyzing line ###
+### no variable found ###
+11	    while (num != 0) {
+### analyzing line ###
+### no variable found ###
+12	        int test = 1;
+### analyzing line ###
+### found variable ###
+Hardware watchpoint 5: test
+
+Watchpoint 5 deleted because the program has left the block in
+which its expression is valid.
+__libc_start_main (main=0x555555555149 <main>, argc=1, argv=0x7fffffffdb08, init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, stack_end=0x7fffffffdaf8) at ../csu/libc-start.c:342
+(gdb) [K(gdb) y 
+(gdb)  q 
+A debugging session is active.
+
+	Inferior 1 [process 5366] will be killed.
+
+Quit anyway? (y or n)  clear && !! 
+Please answer y or n.
+A debugging session is active.
+
+	Inferior 1 [process 5366] will be killed.
+
+Quit anyway? (y or n)  gcc -g hello.c && gdb -q --command test.py > out.txt
+Please answer y or n.
+A debugging session is active.
+
+	Inferior 1 [process 5366] will be killed.
+
+Quit anyway? (y or n) y 
