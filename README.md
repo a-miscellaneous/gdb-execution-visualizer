@@ -4,10 +4,10 @@
 
 ## Requirements
 
-* Python 3.x (maybe)
+* Python 3.x 
 * GDB
 * GCC/c compiler
-* rr
+* rr (not currently)
 
 #### GDB
 should be compiled for use with python, check
@@ -33,7 +33,7 @@ TODO:
 
 current execution command:
 ```
-q \n gcc -g hello.c && gdb -q --command test.py
+y \n q \n y \n clear && !! \n gcc -g3 hello.c && gdb -q --command test.py 
 ```
 put it into [F5 Anything](https://marketplace.visualstudio.com/items?itemName=discretegames.f5anything)
 
