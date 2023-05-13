@@ -1,0 +1,22 @@
+{"line": 11, "var": "num", "values": ["12345"]}
+{"line": 12, "var": "rev", "values": ["1"]}
+{"line": 13, "var": "rem", "values": ["1"]}
+{"line": 15, "var": "test", "values": ["0", "1", "1", "1", "1"]}
+{"line": 16, "var": "test", "values": ["1"]}
+{"line": 6, "var": "result", "values": ["5", "4", "3", "2", "1"]}
+{"line": 19, "var": "rev", "values": ["15", "154", "1543", "15432", "154321"]}
+{"line": 20, "var": "num", "values": ["1234", "123", "12", "1", "0"]}
+{"line": 32, "var": "arg", "values": ["0x7fffffffd940}}"]}
+{"line": 1289, "var": "thousands_sep", "values": ["0x0", "0x0"]}
+{"line": 1320, "var": "readonly_format", "values": ["0", "0"]}
+{"line": 1328, "var": "save_errno", "values": ["out>"]}
+{"line": 1343, "var": "done", "values": ["0", "0xffffffffffffffff>"]}
+{"line": 1354, "var": "ap_save", "values": ["0x7fffffffd940}}", "0"]}
+{"line": 111, "var": "lead_str_end", "values": ["\\n\"", "out>", "<do_lookup_x+970>}", "\\n\"", "0"]}
+{"line": 1369, "var": "_avail", "values": ["0", "out>"]}
+{"line": 1370, "var": "_avail", "values": ["out>"]}
+{"line": 1198, "var": "to_do", "values": ["15", "\\n\""]}
+{"line": 78, "var": "size", "values": ["8192"]}
+{"line": 34, "var": "resultvar", "values": ["out>", "140737488343632", "1", "1", "140737488343632"]}
+{"line": 86, "var": "__dev_major", "values": ["out>"]}
+{"line": 97, "var": "size", "values": ["1024"]}
