@@ -2,13 +2,10 @@
 {"line": 12, "var": "rev", "values": ["1"]}
 {"line": 13, "var": "rem", "values": ["1"]}
 {"line": 17, "var": "test", "values": ["1", "1", "1", "1", "1"]}
-{"line": 6, "var": "result", "values": ["5", "4", "3", "2", "1"]}
-{"line": 18, "var": "rem", "values": ["5", "4", "3", "2", "1"]}
+{"line": 6, "var": "a", "values": ["5", "4", "3", "2", "1"]}
 {"line": 19, "var": "rem", "values": ["5", "4", "3", "2", "1"]}
 {"line": 20, "var": "rev", "values": ["15", "154", "1543", "15432", "154321"]}
 {"line": 21, "var": "num", "values": ["1234", "123", "12", "1", "0"]}
 {"line": 1320, "var": "save_errno", "values": ["0"]}
 {"line": 1328, "var": "__result", "values": ["<optimized out>"]}
 {"line": 1369, "var": "_buffer", "values": ["{__routine = 0x7ffff7e2d060 <__funlockfile>, __arg = 0x7ffff7fb76a0 <_IO_2_1_stdout_>, __canceltype = -136528268, __prev = 0x7ffff7fda88a <do_lookup_x+970>}"]}
-{"line": 1370, "var": "__self", "values": ["0x7ffff7fbd540"]}
-{"line": 941, "var": "section_length", "values": ["<optimized out>", "<optimized out>"]}

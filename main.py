@@ -84,7 +84,9 @@ class gdbHandler():
         self.analyzeLine()
 
     def getLocals(self):
-        infoLocals = gdb.execute("info locals", to_string=True).split("\n")
+        infoLocals = gdb.execute("info locals", to_string=True)
+        if infoLocals == "No locals.\n": return None
+        infoLocals = infoLocals.split("\n")
         result = {}
         for i in infoLocals:
             iArray = i.split(" ", 2)
@@ -104,6 +106,10 @@ class gdbHandler():
 
         gdb.execute("step")
 
+        if currentVar is None:
+            self.analyzeLine()
+            return
+
         newFrame = gdb.selected_frame()
         if currentFrame != newFrame:
 
@@ -116,31 +122,26 @@ class gdbHandler():
             self.analyzeLine()
 
         # came back from recursion or just steped on new line
-        if currentFrame != gdb.selected_frame():
-            print('SOMETHING WENT VERY WRONG')
-            return
 
-        # find diferences from saved locals and save them
-        newLocals = self.getLocals()
-        if newLocals:
-            for key, value in newLocals.items():
-                if key == currentVar:
-                    self.addToHistory(currentLine, key, value)
 
+        # find diferences between the two frames and save them
+        self.addToHistory(currentLine, currentVar)
 
         # continue recurse
         self.analyzeLine()
 
 
-    def addToHistory(self, line : int, var : str, value):
+    def addToHistory(self, line : int, var : str):
         self.lineHistorys.append(line)
+        value = gdb.parse_and_eval(var)
+
         if self.globalHistory.get(line) is None:
             self.globalHistory[line] = lineHistory(line, var, value)
             return
-        self.globalHistory[line].append( value )
 
-    def getVarValue(self, varName):
-        return gdb.parse_and_eval(varName)
+        self.globalHistory[line].append(value)
+
+
 
 
 
@@ -152,7 +153,6 @@ if __name__ == "__main__":
     try:
         gdbHandler.startAnalysis()
     except:
-
         print("### end of program ###")
 
 

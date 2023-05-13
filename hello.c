@@ -3,8 +3,8 @@
 
 
 int mod(int a, int b) {
-    int result = a % b;
-    return result;
+    a = a % b;
+    return a;
 }
 
 int main() {
