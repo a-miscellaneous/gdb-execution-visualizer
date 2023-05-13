@@ -20,29 +20,12 @@ class lineHistory():
         return {"line": self.line, "var": self.var, "values": self.values}
 
 
-class SaveValueWatchpoint(gdb.Breakpoint):
-    def __init__(self, spec, callback):
-        super().__init__(spec, gdb.BP_WATCHPOINT, gdb.WP_WRITE, internal=True)
-        self.saved_value = None
-        self.var_name = spec.split()[1]
-        self.callback = callback
-
-    def stop(self):
-        new_value = gdb.selected_frame().read_var(self.var_name)
-        if new_value != self.saved_value:
-            self.saved_value = new_value
-            self.callback(self.var_name, new_value, gdb.selected_frame().find_sal().line) # gdb stops on next line so wrong line
-        return False
-
-
-
 class gdbHandler():
     lineHistorys = []
     globalHistory = dict()
 
-    #TODO: dynamic amount of variables per line
+    #BUG when adding variables in a block they are incorrectly saved into history
     #TODO: get the given variables from a function call
-    #TODO: get function arguments
     #TODO BUG: values are sometimes initialized with 0 so setting them to zero doesn't trigger a watchpoint
     #TODO: add increment/decrement to variable finder (prefix and postfix) [https://en.wikipedia.org/wiki/Operators_in_C_and_C%2B%2B]
 
@@ -51,38 +34,11 @@ class gdbHandler():
         print("### initialising gdbHandler ###")
         self.fileName = fName
         self.cName = cName
+        self.frameAmount = 0
         gdb.execute("file " + self.fileName)
         gdb.execute("set pagination off")
-        gdb.execute("set can-use-hw-watchpoints 0")
-        self.frameAmount = 0
 
 
-
-    def setBreakPoint(self, place):
-        print("### setting breakpoint ###")
-        exe = self.cName + ":" + str(place) if type(place) is int else place
-        gdb.Breakpoint(exe, gdb.BP_BREAKPOINT, temporary=True)
-        #gdb.execute("break " + exe)
-
-    def setWatchPoint(self, varName):
-        gdb.Breakpoint(varName, gdb.BP_WATCHPOINT)
-        # gdb.execute("commands\nsilent\nend")
-
-    def setLoggingWatchpoint(self, varName):
-        SaveValueWatchpoint(varName, self.watchpoint_callback)
-
-    def watchpoint_callback(self, var_name, new_value, line):
-        if self.globalHistory.get(line) is None:
-            self.globalHistory[line] = lineHistory(line, var_name, new_value)
-            return
-        self.globalHistory[line].append(new_value)
-
-
-    def updateLocals(self):
-        self.frame = gdb.selected_frame()
-        self.block = self.frame.block()
-        self.line = self.frame.find_sal().line
-        self.lineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split(" ",1)[1].strip()
 
     def findVarInLine(self):
 
@@ -112,7 +68,6 @@ class gdbHandler():
         while frame is not None:
             num_frames += 1
             frame = frame.older()
-        print("### frame amount: {} ###".format(num_frames))
         return num_frames
 
     def startAnalysis(self):
@@ -131,10 +86,10 @@ class gdbHandler():
 
 
     def analyzeLine(self):
+        self.frameAmount = self.getFrameAmount()
         currentFrame = gdb.selected_frame()
         currentLine = currentFrame.find_sal().line
         currentLocals = self.getLocals()
-
 
         gdb.execute("step")
 
@@ -153,10 +108,6 @@ class gdbHandler():
 
         # came back from recursion or just new line
         if currentFrame != gdb.selected_frame():
-            print("current frames: {}".format(self.frames))
-            print("current frame: {}".format(gdb.selected_frame().pc()))
-            print("current line: {}".format(currentLine))
-            print("current locals: {}".format(currentLocals))
             print('SOMETHING WENT VERY WRONG')
             return
 
@@ -173,8 +124,6 @@ class gdbHandler():
         self.analyzeLine()
 
 
-
-
     def addToHistory(self, line : int, var : str, value):
         self.lineHistorys.append(line)
         if self.globalHistory.get(line) is None:
@@ -184,42 +133,18 @@ class gdbHandler():
         self.globalHistory[line].append( value )
 
     def getVarValue(self, varName):
-        # could optimize to get the symbol and then get the value from the symbol (maybe faster)
         return gdb.parse_and_eval(varName)
 
-    def run(self):
-        print("### running program ###")
-        gdb.execute("run")
-
-    def quit(self):
-        gdb.execute("quit")
-
-    def continueExecution(self):
-        gdb.execute("continue")
-
-    def step(self):
-            gdb.execute("step")
-
-    def next(self):
-        gdb.execute("next")
-
-
-    def showBreakpoints(self):
-        print("### active breakpoints ###")
-        for bp in gdb.breakpoints():
-            print(bp.expression, bp.temporary, bp.enabled, bp.location)
 
 
 if __name__ == "__main__":
     gdbHandler = gdbHandler("a.out", "hello.c")
-    gdbHandler.setBreakPoint(11)
-    gdbHandler.run()
-    # gdbHandler.analyzeLine()
+    gdb.execute("b 11")
+    gdb.execute("run")
 
     try:
         gdbHandler.startAnalysis()
     except:
-        # print("### exception: {} ###".format(e))
         print("### end of program ###")
 
 
@@ -230,5 +155,5 @@ if __name__ == "__main__":
     for line in gdbHandler.globalHistory:
         print(gdbHandler.globalHistory[line])
 
-    gdbHandler.quit()
+    gdb.execute("quit")
 
