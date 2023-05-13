@@ -23,11 +23,13 @@ class lineHistory():
 class gdbHandler():
     lineHistorys = []
     globalHistory = dict()
+    initHistory = []
 
-    #BUG when adding variables in a block they are incorrectly saved into history
+    #BUG when a variable is initialized in a new block it is incorrectly saved
+    #TODO: save for loop variables
     #TODO: get the given variables from a function call
-    #TODO BUG: values are sometimes initialized with 0 so setting them to zero doesn't trigger a watchpoint
-    #TODO: add increment/decrement to variable finder (prefix and postfix) [https://en.wikipedia.org/wiki/Operators_in_C_and_C%2B%2B]
+    #TODO: don't step outside of user files (aka dont save printf steps)
+
 
 
     def __init__(self, fName, cName):
@@ -38,22 +40,23 @@ class gdbHandler():
         gdb.execute("file " + self.fileName)
         gdb.execute("set pagination off")
 
-
-
     def findVarInLine(self):
 
         #build all vars in frame
-        block = self.block
+        block = gdb.selected_frame().block()
+        line = gdb.selected_frame().find_sal().line
         while block:
             for sym in block: #if local scope
-                if sym.is_variable and sym.line == self.line:
+                if sym.is_variable and sym.line == line:
                     print("### found variable {} with gdb ###".format(sym.name))
                     return sym.name
 
             block = block.superblock
 
+        lineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split("\t",1)[1].strip()
+
         #attempt regex match
-        match = re.match(regX, self.lineStr)
+        match = re.match(regX, lineStr)
         if match:
             res = match.group(2).strip()
             print("### found variable with regex: {} ###".format(res))
@@ -70,26 +73,34 @@ class gdbHandler():
             frame = frame.older()
         return num_frames
 
+    def saveInit(self):
+        line = gdb.selected_frame().find_sal().line
+        localVars = self.getLocals()
+        self.initHistory.append({line: localVars})
+
     def startAnalysis(self):
         self.frameAmount = self.getFrameAmount()
+        self.saveInit()
         self.analyzeLine()
 
     def getLocals(self):
         infoLocals = gdb.execute("info locals", to_string=True).split("\n")
         result = {}
         for i in infoLocals:
-            iArray = i.split(" ")
+            iArray = i.split(" ", 2)
             if len(iArray) > 1:
-                result[iArray[0]] = iArray[-1]
+                result[iArray[0]] = iArray[2]
 
         return result if len(result) > 0 else None
 
 
     def analyzeLine(self):
+        # save local frame with locals
         self.frameAmount = self.getFrameAmount()
         currentFrame = gdb.selected_frame()
         currentLine = currentFrame.find_sal().line
-        currentLocals = self.getLocals()
+        currentVar = self.findVarInLine()
+
 
         gdb.execute("step")
 
@@ -98,15 +109,13 @@ class gdbHandler():
 
             # if returned from a function call: kill self
             if self.frameAmount > self.getFrameAmount():
-                print('### returning ###')
-                self.frameAmount = self.getFrameAmount()
                 return
 
-            # if entered a new function call, start recursion
-            print('### entering new function ###')
+            # if entered a new function call: start recursion
+            self.saveInit()
             self.analyzeLine()
 
-        # came back from recursion or just new line
+        # came back from recursion or just steped on new line
         if currentFrame != gdb.selected_frame():
             print('SOMETHING WENT VERY WRONG')
             return
@@ -114,11 +123,10 @@ class gdbHandler():
         # find diferences from saved locals and save them
         newLocals = self.getLocals()
         if newLocals:
-            oldSet = set(currentLocals.items())
-            newSet = set(newLocals.items())
-            diff = newSet - oldSet
-            for i in diff:
-                self.addToHistory(currentLine, i[0], i[1])
+            for key, value in newLocals.items():
+                if key == currentVar:
+                    self.addToHistory(currentLine, key, value)
+
 
         # continue recurse
         self.analyzeLine()
@@ -127,7 +135,6 @@ class gdbHandler():
     def addToHistory(self, line : int, var : str, value):
         self.lineHistorys.append(line)
         if self.globalHistory.get(line) is None:
-            print("### creating new lineHistory ###")
             self.globalHistory[line] = lineHistory(line, var, value)
             return
         self.globalHistory[line].append( value )
@@ -139,12 +146,13 @@ class gdbHandler():
 
 if __name__ == "__main__":
     gdbHandler = gdbHandler("a.out", "hello.c")
-    gdb.execute("b 11")
+    gdb.execute("b main")
     gdb.execute("run")
 
     try:
         gdbHandler.startAnalysis()
     except:
+
         print("### end of program ###")
 
 

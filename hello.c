@@ -13,7 +13,7 @@ int main() {
     int rem = 1;
 
     while (num != 0) {
-        
+
         int test = 1;
         rem = mod(num, 10);
         rem = num % 10;
