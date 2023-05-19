@@ -88,7 +88,6 @@ class gdbHandler():
 
         return locs if locs else args
 
-
     def analyzeLine(self):
         # save local frame with locals
         self.frameAmount = self.getFrameAmount()
@@ -118,11 +117,9 @@ class gdbHandler():
         # continue recurse
         self.analyzeLine()
 
-
-
     def saveAssiggnmentHistory(self, line : int, oldlocals : dict, oldLineStr : str):
         file = gdb.selected_frame().find_sal().symtab.filename
-        oldLineStr = " "+oldLineStr
+        oldLineStr = " "+oldLineStr # to exclude any " or '
         newLocals = self.getVars()
         if newLocals is None: return
 
@@ -142,7 +139,7 @@ class gdbHandler():
                     self.history.append(obj)
                     return
 
-        # if no changes detected, attempt to find a var in the line and the save it
+        # if no changes detected, attempt to find a var in the line and then save it
         assignmentRegX = r"([^\"\'])(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
         match = re.search(assignmentRegX, oldLineStr)
         if match:
@@ -166,10 +163,6 @@ class gdbHandler():
 
         obj = {"line" : line, "args" : dic, "file": file, "type" : saveTypes[FUNCTION_ARGS]}
         self.history.append(obj)
-
-
-
-
 
 
 if __name__ == "__main__":
