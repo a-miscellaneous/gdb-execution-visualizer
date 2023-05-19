@@ -123,8 +123,6 @@ class gdbHandler():
     def saveAssiggnmentHistory(self, line : int, oldlocals : dict, oldLineStr : str):
         file = gdb.selected_frame().find_sal().symtab.filename
         oldLineStr = " "+oldLineStr
-
-
         newLocals = self.getVars()
         if newLocals is None: return
 
@@ -144,7 +142,6 @@ class gdbHandler():
                     self.history.append(obj)
                     return
 
-
         # if no changes detected, attempt to find a var in the line and the save it
         assignmentRegX = r"([^\"\'])(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
         match = re.search(assignmentRegX, oldLineStr)
@@ -152,8 +149,6 @@ class gdbHandler():
             res = match.group(3).strip()
             obj = {"line" : line, "value" : oldlocals[res], "var": res, "file" : file, "type" : saveTypes[ASSIGNMENT]}
             self.history.append(obj)
-            print("### found variable with regex: {} ###".format(res))
-            return
 
     def findForLoop(self, var):
         currentLineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split("\t",1)[1].strip()
