@@ -5,15 +5,16 @@
 
 
 int mod(int a, int b) {
+
     a = a % b;
     return a;
 }
 
 int main() {
     int num;
-    num = 12345;
-    int rev = 1;
-    int rem = 1;
+    num = 123;
+    int rev = 0;
+    int rem = 0;
     char *str = "Hello World";
     char *str2 = (char*)malloc(100);
     strcpy(str2, str);
@@ -25,6 +26,15 @@ int main() {
         rev = rev * 10 + rem;
         num /= 10;
     }
+
+    for (int i = 0; i < 4; i++) {
+        printf("Hello World\n");
+    }
+
+    int ss = 0;
+    do {
+        ss++;
+    } while (ss < 4);
 
     printf("////Reversed = %d \n", rev);
 

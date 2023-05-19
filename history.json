@@ -1,35 +1,37 @@
-{"line": 14, "value": "12345", "file": "hello.c", "type": "assignment"}
-{"line": 15, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 16, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 17, "value": "0x555555556004 \"Hello World\"", "file": "hello.c", "type": "assignment"}
-{"line": 18, "value": "0x5555555592a0 \"\"", "file": "hello.c", "type": "assignment"}
-{"line": 22, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 8, "args": {"a": "12345", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
-{"line": 8, "value": "5", "file": "hello.c", "type": "assignment"}
-{"line": 24, "value": "5", "file": "hello.c", "type": "assignment"}
-{"line": 25, "value": "15", "file": "hello.c", "type": "assignment"}
-{"line": 26, "value": "1234", "file": "hello.c", "type": "assignment"}
-{"line": 22, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 8, "args": {"a": "1234", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
-{"line": 8, "value": "4", "file": "hello.c", "type": "assignment"}
-{"line": 24, "value": "4", "file": "hello.c", "type": "assignment"}
-{"line": 25, "value": "154", "file": "hello.c", "type": "assignment"}
-{"line": 26, "value": "123", "file": "hello.c", "type": "assignment"}
-{"line": 22, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 8, "args": {"a": "123", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
-{"line": 8, "value": "3", "file": "hello.c", "type": "assignment"}
-{"line": 24, "value": "3", "file": "hello.c", "type": "assignment"}
-{"line": 25, "value": "1543", "file": "hello.c", "type": "assignment"}
-{"line": 26, "value": "12", "file": "hello.c", "type": "assignment"}
-{"line": 22, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 8, "args": {"a": "12", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
-{"line": 8, "value": "2", "file": "hello.c", "type": "assignment"}
-{"line": 24, "value": "2", "file": "hello.c", "type": "assignment"}
-{"line": 25, "value": "15432", "file": "hello.c", "type": "assignment"}
-{"line": 26, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 22, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 8, "args": {"a": "1", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
-{"line": 8, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 24, "value": "1", "file": "hello.c", "type": "assignment"}
-{"line": 25, "value": "154321", "file": "hello.c", "type": "assignment"}
-{"line": 26, "value": "0", "file": "hello.c", "type": "assignment"}
+{"line": 15, "value": "123", "var": "num", "file": "hello.c", "type": "assignment"}
+{"line": 16, "value": "0", "var": "rev", "file": "hello.c", "type": "assignment"}
+{"line": 17, "value": "0", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 18, "value": "0x555555556004 \"Hello World\"", "var": "str", "file": "hello.c", "type": "assignment"}
+{"line": 19, "value": "0x5555555592a0 \"\"", "var": "str2", "file": "hello.c", "type": "assignment"}
+{"line": 20, "value": "0x5555555592a0 \"Hello World\"", "var": "str2", "file": "hello.c", "type": "assignment"}
+{"line": 23, "value": "1", "var": "test", "file": "hello.c", "type": "assignment"}
+{"line": 7, "args": {"a": "123", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
+{"line": 9, "value": "3", "var": "a", "file": "hello.c", "type": "assignment"}
+{"line": 24, "value": "3", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 25, "value": "3", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 26, "value": "3", "var": "rev", "file": "hello.c", "type": "assignment"}
+{"line": 27, "value": "12", "var": "num", "file": "hello.c", "type": "assignment"}
+{"line": 23, "value": "1", "var": "test", "file": "hello.c", "type": "assignment"}
+{"line": 7, "args": {"a": "12", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
+{"line": 9, "value": "2", "var": "a", "file": "hello.c", "type": "assignment"}
+{"line": 24, "value": "2", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 25, "value": "2", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 26, "value": "32", "var": "rev", "file": "hello.c", "type": "assignment"}
+{"line": 27, "value": "1", "var": "num", "file": "hello.c", "type": "assignment"}
+{"line": 23, "value": "1", "var": "test", "file": "hello.c", "type": "assignment"}
+{"line": 7, "args": {"a": "1", "b": "10"}, "file": "hello.c", "type": "functionArgs"}
+{"line": 9, "value": "1", "var": "a", "file": "hello.c", "type": "assignment"}
+{"line": 24, "value": "1", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 25, "value": "1", "var": "rem", "file": "hello.c", "type": "assignment"}
+{"line": 26, "value": "321", "var": "rev", "file": "hello.c", "type": "assignment"}
+{"line": 27, "value": "0", "var": "num", "file": "hello.c", "type": "assignment"}
+{"line": 30, "value": "0", "var": "i", "file": "hello.c", "type": "assignment"}
+{"line": 30, "value": "1", "var": "i", "file": "hello.c", "type": "assignment"}
+{"line": 30, "value": "2", "var": "i", "file": "hello.c", "type": "assignment"}
+{"line": 30, "value": "3", "var": "i", "file": "hello.c", "type": "assignment"}
+{"line": 30, "value": "3", "var": "i", "file": "hello.c", "type": "assignment"}
+{"line": 34, "value": "0", "var": "ss", "file": "hello.c", "type": "assignment"}
+{"line": 36, "value": "1", "var": "ss", "file": "hello.c", "type": "assignment"}
+{"line": 36, "value": "2", "var": "ss", "file": "hello.c", "type": "assignment"}
+{"line": 36, "value": "3", "var": "ss", "file": "hello.c", "type": "assignment"}
+{"line": 36, "value": "4", "var": "ss", "file": "hello.c", "type": "assignment"}

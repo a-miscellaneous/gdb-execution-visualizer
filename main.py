@@ -2,7 +2,7 @@ import gdb
 import re
 import json
 
-regX = r"^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
+
 
 ASSIGNMENT = 0
 FUNCTION_ARGS = 1
@@ -30,13 +30,6 @@ class lineHistory():
 class gdbHandler():
     history = []
 
-    #BUG when a variable is initialized in a new block it is incorrectly saved
-    #TODO: save for loop variables
-    #TODO: get the given variables from a function call
-    #TODO: don't step outside of user files (aka dont save printf steps)
-
-
-
     def __init__(self, fName, cName):
         print("### initialising gdbHandler ###")
         self.fileName = fName
@@ -45,30 +38,6 @@ class gdbHandler():
         gdb.execute("file " + self.fileName)
         gdb.execute("set pagination off")
         gdb.execute("set style enabled off") # remove colors
-
-    def findVarInLine(self):
-
-        #build all vars in frame
-        block = gdb.selected_frame().block()
-        line = gdb.selected_frame().find_sal().line
-        while block:
-            for sym in block: #if local scope
-                if sym.is_variable and sym.line == line:
-                    print("### found variable {} with gdb ###".format(sym.name))
-                    return sym.name
-
-            block = block.superblock
-
-        lineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split("\t",1)[1].strip()
-        #attempt regex match
-        match = re.match(regX, lineStr)
-        if match:
-            res = match.group(2).strip()
-            print("### found variable with regex: {} ###".format(res))
-            return res
-
-        print("### no variable found  ###")
-        return None #if we are on something weird like a function head or not in scope
 
     def getFrameAmount(self):
         num_frames = 0
@@ -87,8 +56,9 @@ class gdbHandler():
 
     def getLocals(self):
         infoLocals = gdb.execute("info locals", to_string=True)
-        if infoLocals == "No locals.\n": return None
-        infoLocals = infoLocals.split("\n")
+        if infoLocals == "No locals.\n":
+            return None
+        infoLocals = infoLocals.strip().split("\n")
         result = {}
         for i in infoLocals:
             iArray = i.split(" ", 2)
@@ -97,20 +67,38 @@ class gdbHandler():
 
         return result if len(result) > 0 else None
 
+    def getArgs(self):
+        args = gdb.execute("info args", to_string=True)
+        if args == "No arguments.\n": return
+        args = args.strip().split("\n")
+        dic = {}
+        for arg in args:
+            s = arg.split("=", 1)
+            dic[s[0].strip()] = s[1].strip()
+
+        return dic if len(dic) > 0 else None
+
+    def getVars(self):
+        locs = self.getLocals()
+        args = self.getArgs()
+
+        if locs and args:
+            args.update(locs)
+            return args
+
+        return locs if locs else args
+
+
     def analyzeLine(self):
         # save local frame with locals
         self.frameAmount = self.getFrameAmount()
         currentFrame = gdb.selected_frame()
         currentLine = currentFrame.find_sal().line
-        currentVar = self.findVarInLine()
+        currentLocals = self.getVars()
         currentFile = currentFrame.find_sal().symtab.filename
-
+        currentLineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split("\t",1)[1].strip()
 
         gdb.execute("step")
-
-        if currentVar is None:
-            self.analyzeLine()
-            return
 
         newFrame = gdb.selected_frame()
         if currentFrame != newFrame:
@@ -118,40 +106,68 @@ class gdbHandler():
             # if returned from a function call: kill self
             if self.frameAmount > self.getFrameAmount():
                 return
-
+            # else
             # if entered a new function call: start recursion
             self.saveFunctionParams()
             self.analyzeLine()
 
         # came back from recursion or just steped on new line
-
-
-        # find diferences between the two frames and save them
-        self.addAssignmentHistory(currentLine, currentVar, currentFile)
+        # find diferences and save them
+        self.saveAssiggnmentHistory(currentLine, currentLocals, currentLineStr)
 
         # continue recurse
         self.analyzeLine()
 
 
-    def addAssignmentHistory(self, line : int, var : str, file : str):
-        value = gdb.parse_and_eval(var)
-        obj = {"line" : line, "value" : str(value), "file" : file, "type" : saveTypes[ASSIGNMENT]}
-        self.history.append(obj)
+
+    def saveAssiggnmentHistory(self, line : int, oldlocals : dict, oldLineStr : str):
+        file = gdb.selected_frame().find_sal().symtab.filename
+        oldLineStr = " "+oldLineStr
 
 
-        # self.globalHistory[line].append(value)
+        newLocals = self.getVars()
+        if newLocals is None: return
+
+        for key in newLocals:
+            try:
+                if oldlocals[key] != newLocals[key]: # found a difference, save it
+                    obj = {"line" : line, "value" : newLocals[key], "var": key, "file" : file, "type" : saveTypes[ASSIGNMENT]}
+                    self.history.append(obj)
+                    return
+
+            except: # means that a new var was added to the scope
+                currentLine = gdb.selected_frame().find_sal().line
+                obj = {"line" : currentLine, "value" : newLocals[key],"var": key, "file" : file, "type" : saveTypes[ASSIGNMENT]}
+
+                # only accept the new var if it came from a for loop
+                if self.findForLoop(key):
+                    self.history.append(obj)
+                    return
+
+
+        # if no changes detected, attempt to find a var in the line and the save it
+        assignmentRegX = r"([^\"\'])(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
+        match = re.search(assignmentRegX, oldLineStr)
+        if match:
+            res = match.group(3).strip()
+            obj = {"line" : line, "value" : oldlocals[res], "var": res, "file" : file, "type" : saveTypes[ASSIGNMENT]}
+            self.history.append(obj)
+            print("### found variable with regex: {} ###".format(res))
+            return
+
+    def findForLoop(self, var):
+        currentLineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split("\t",1)[1].strip()
+        for_regex = r"^(\s*)(for)(\s*)(\()([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)"
+        match = re.search(for_regex, currentLineStr)
+        if not match or match.group(5) != var:
+            return False
+        return True
 
     def saveFunctionParams(self):
-        line = gdb.selected_frame().find_sal().line
+        line = gdb.selected_frame().function().line
         file = gdb.selected_frame().find_sal().symtab.filename
-        args = gdb.execute("info args", to_string=True)
-        if args == "No arguments.\n": return
-        args = args.strip().split("\n")
-        print(args)
-        dic = {}
-        for arg in args:
-            s = arg.split("=", 1)
-            dic[s[0].strip()] = s[1].strip()
+        dic = self.getArgs()
+        if dic is None: return
 
         obj = {"line" : line, "args" : dic, "file": file, "type" : saveTypes[FUNCTION_ARGS]}
         self.history.append(obj)
