@@ -4,6 +4,11 @@ import json
 
 regX = r"^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
 
+ASSIGNMENT = 0
+FUNCTION_ARGS = 1
+saveTypes = {ASSIGNMENT : "assignment", FUNCTION_ARGS : "functionArgs"}
+
+
 class lineHistory():
     def __init__(self, line, var, value):
         self.line = line
@@ -20,10 +25,10 @@ class lineHistory():
         return {"line": self.line, "var": self.var, "values": self.values}
 
 
+
+
 class gdbHandler():
-    lineHistorys = []
-    globalHistory = dict()
-    initHistory = []
+    history = []
 
     #BUG when a variable is initialized in a new block it is incorrectly saved
     #TODO: save for loop variables
@@ -39,6 +44,7 @@ class gdbHandler():
         self.frameAmount = 0
         gdb.execute("file " + self.fileName)
         gdb.execute("set pagination off")
+        gdb.execute("set style enabled off") # remove colors
 
     def findVarInLine(self):
 
@@ -54,7 +60,6 @@ class gdbHandler():
             block = block.superblock
 
         lineStr = gdb.execute("frame ", to_string=True ).split("\n")[1].split("\t",1)[1].strip()
-
         #attempt regex match
         match = re.match(regX, lineStr)
         if match:
@@ -73,14 +78,11 @@ class gdbHandler():
             frame = frame.older()
         return num_frames
 
-    def saveInit(self):
-        line = gdb.selected_frame().find_sal().line
-        localVars = self.getLocals()
-        self.initHistory.append({line: localVars})
-
     def startAnalysis(self):
         self.frameAmount = self.getFrameAmount()
-        self.saveInit()
+        line = gdb.selected_frame().find_sal().line
+        file = gdb.selected_frame().find_sal().symtab.filename
+        self.saveFunctionParams()
         self.analyzeLine()
 
     def getLocals(self):
@@ -95,13 +97,13 @@ class gdbHandler():
 
         return result if len(result) > 0 else None
 
-
     def analyzeLine(self):
         # save local frame with locals
         self.frameAmount = self.getFrameAmount()
         currentFrame = gdb.selected_frame()
         currentLine = currentFrame.find_sal().line
         currentVar = self.findVarInLine()
+        currentFile = currentFrame.find_sal().symtab.filename
 
 
         gdb.execute("step")
@@ -118,28 +120,42 @@ class gdbHandler():
                 return
 
             # if entered a new function call: start recursion
-            self.saveInit()
+            self.saveFunctionParams()
             self.analyzeLine()
 
         # came back from recursion or just steped on new line
 
 
         # find diferences between the two frames and save them
-        self.addToHistory(currentLine, currentVar)
+        self.addAssignmentHistory(currentLine, currentVar, currentFile)
 
         # continue recurse
         self.analyzeLine()
 
 
-    def addToHistory(self, line : int, var : str):
-        self.lineHistorys.append(line)
+    def addAssignmentHistory(self, line : int, var : str, file : str):
         value = gdb.parse_and_eval(var)
+        obj = {"line" : line, "value" : str(value), "file" : file, "type" : saveTypes[ASSIGNMENT]}
+        self.history.append(obj)
 
-        if self.globalHistory.get(line) is None:
-            self.globalHistory[line] = lineHistory(line, var, value)
-            return
 
-        self.globalHistory[line].append(value)
+        # self.globalHistory[line].append(value)
+
+    def saveFunctionParams(self):
+        line = gdb.selected_frame().find_sal().line
+        file = gdb.selected_frame().find_sal().symtab.filename
+        args = gdb.execute("info args", to_string=True)
+        if args == "No arguments.\n": return
+        args = args.strip().split("\n")
+        print(args)
+        dic = {}
+        for arg in args:
+            s = arg.split("=", 1)
+            dic[s[0].strip()] = s[1].strip()
+
+        obj = {"line" : line, "args" : dic, "file": file, "type" : saveTypes[FUNCTION_ARGS]}
+        self.history.append(obj)
+
 
 
 
@@ -152,16 +168,17 @@ if __name__ == "__main__":
 
     try:
         gdbHandler.startAnalysis()
-    except:
+    except gdb.error as e:
+        print(e)
         print("### end of program ###")
 
 
     print("### printing history ###")
     with open("history.json", "w") as f:
-        for line in gdbHandler.globalHistory:
-            f.write(json.dumps(gdbHandler.globalHistory[line].getObject()) + "\n")
-    for line in gdbHandler.globalHistory:
-        print(gdbHandler.globalHistory[line])
+        for line in gdbHandler.history:
+            f.write(json.dumps(line) + "\n")
+            print(line)
+
 
     gdb.execute("quit")
 

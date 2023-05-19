@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 
@@ -8,12 +10,15 @@ int mod(int a, int b) {
 }
 
 int main() {
-    int num = 12345;
+    int num;
+    num = 12345;
     int rev = 1;
     int rem = 1;
+    char *str = "Hello World";
+    char *str2 = (char*)malloc(100);
+    strcpy(str2, str);
 
     while (num != 0) {
-
         int test = 1;
         rem = mod(num, 10);
         rem = num % 10;
@@ -23,5 +28,5 @@ int main() {
 
     printf("////Reversed = %d \n", rev);
 
-    return 0;
+    exit(0);
 }

@@ -8,7 +8,7 @@
             "name": "F5 Anything: Custom Command",
             "type": "f5anything",
             "request": "launch",
-            "command": "y \n q \n y \n clear && !! \n gcc -g3 hello.c && gdb -q --command main.py ",
+            "command": "y \n q \n y \n clear && !! \n gcc -g3  hello.c && gdb -q --command main.py ",
         }
     ]
 }
