@@ -5,7 +5,7 @@
 
 
 int mod(int a, int b) {
-
+    int c = a / b;
     a = a % b;
     return a;
 }
@@ -33,10 +33,11 @@ int main() {
 
     int ss = 0;
     do {
+        int x = 0;
         ss++;
     } while (ss < 4);
 
     printf("////Reversed = %d \n", rev);
 
-    exit(0);
+    exit (0);
 }
