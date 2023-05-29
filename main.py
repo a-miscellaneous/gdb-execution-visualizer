@@ -155,6 +155,7 @@ class argsHistory():
 
     def append(self, varObj, step, stackHeight):
         self.values.append({"dict": varObj, "stackHeight": stackHeight, "step": step})
+        # step is the first step in this function so it is incorrect, used for finding nearest step with <= step
 
     def asSerial(self):
         return { "functionName": self.stackName, "values": self.values}
