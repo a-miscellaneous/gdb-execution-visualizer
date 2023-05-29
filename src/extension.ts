@@ -1,16 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import { get } from "http";
+import * as interfaces from "./interfaces";
+import * as utils from "./utils";
 
-interface HistoryEntry {
-    line: number;
-    value?: string;
-    args?: Object;
-    file: string;
-    type: string;
-    var?: string;
-}
+
 
 
 export function activate(context: vscode.ExtensionContext) {
@@ -18,12 +12,15 @@ export function activate(context: vscode.ExtensionContext) {
 
         const panel = createWebViewPanel();
         const lineHeight = getLineHeight();
+        const currentFile = getActiveDocument();
         console.log("Line Height:", lineHeight);
+        console.log("Current File:", currentFile);
+
         const filePath = vscode.Uri.file(path.join(context.extensionPath, "history.json"));
-        const lineHistorys = getLineHistorys(filePath.fsPath);
-        const historyPerLine: string[][] = getHistoryPerLine(lineHistorys);
-        const htmlPerLine: string[] = getHTMLPerLine(historyPerLine);
-        const htmlContent = htmlPerLine.map((html) => `<div class="line" >${html}</div>`).join("");
+        const lineHistorys : interfaces.ExeHistory = getLineHistorys(filePath.fsPath);
+        const lineHistorysHTML : interfaces.FileToHTML = getHTMLperFile(lineHistorys);
+
+        const htmlContent = lineHistorysHTML['hello.c'].join("");
 
         // Set the webview's HTML content
         setHTMLcontent(panel, htmlContent, lineHeight);
@@ -67,6 +64,46 @@ function createWebViewPanel() {
 
 export function deactivate() { }
 
+function getHTMLperFile(lineHistorys: interfaces.ExeHistory): interfaces.FileToHTML {
+    return utils.objMap(lineHistorys, (value : interfaces.LineMapping) => {
+        return getHTMLperLine(value);
+    });
+}
+
+function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
+    const newObj = utils.objMap(lineHistory, ( value : interfaces.LineHistory|interfaces.ArgsHistory, key: string) => {
+        if ("functionName" in value) {
+            return `<div class="line" id="line-${key}">${getHTMLperArgsHistory(value)}</div>`;
+        } else {
+            return `<div class="line" id="line-${key}">${getHTMLperLineHistory(value)}</div>`;
+        }
+    });
+
+    // 0 padding
+    const maxLine = Math.max(...Object.keys(newObj).map(Number));
+    for (let i = 0; i < maxLine; i++) {
+        if (!newObj[i]) {
+            newObj[i] = `<div class="line" id="line-${i}" ></div>`;
+        }
+    }
+
+    return Object.values(newObj);
+
+
+}
+
+function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
+    // TODO: implement
+    return `<div class="entry" id="name-${argsHistory.functionName}"> </div>`;
+}
+
+function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {
+    const lineHistoryValues = lineHistory.values;
+    const lineHistoryValuesHTML = lineHistoryValues.map((value : interfaces.LineHistoryValues) => {
+        return `<div class="entry" id="step-${value.step}">${value.value}</div>`;
+    });
+    return lineHistoryValuesHTML.join("");
+}
 
 
 // TODO: accept other settings other than the default lineHeight of 0 [below 8 is a scalar] [more than 8 is a px value]
@@ -91,24 +128,23 @@ function getLineHeight(): number {
     // return defaultLineHeight;
 }
 
-
-function getLineHistorys(path: string): HistoryEntry[] {
-    const data = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
-    const lines = data.split("\n");
-    const historyEntries: HistoryEntry[] = [];
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (line === "") { // Skip empty lines
-            continue;
-        }
-        const entry: HistoryEntry = JSON.parse(line);
-        historyEntries.push(entry);
+function getActiveDocument(): string {
+    const activeTextEditor: vscode.TextEditor = vscode.window.visibleTextEditors[0];
+    if (!activeTextEditor) {
+        return "";
     }
-    return historyEntries;
+    return activeTextEditor.document.fileName;
 }
 
 
-function getHistoryPerLine(lineHistorys: HistoryEntry[]): string[][] {
+function getLineHistorys(path: string): interfaces.ExeHistory {
+    const data = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
+    const obj : interfaces.ExeHistory = JSON.parse(data);
+    return obj
+}
+
+
+function getHistoryPerLine(lineHistorys: any): string[][] {
     const historyPerLine: string[][] = [];
     for (let i = 0; i < lineHistorys.length; i++) {
         const historyEntry = lineHistorys[i];
