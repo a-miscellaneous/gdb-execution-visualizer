@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import * as path from "path";
 import * as fs from "fs";
 import * as interfaces from "./interfaces";
 import * as utils from "./utils";
+import * as path from "path";
 
 
 
@@ -16,11 +16,17 @@ export function activate(context: vscode.ExtensionContext) {
         console.log("Line Height:", lineHeight);
         console.log("Current File:", currentFile);
 
-        const filePath = vscode.Uri.file(path.join(context.extensionPath, "history.json"));
-        const lineHistorys : interfaces.ExeHistory = getLineHistorys(filePath.fsPath);
+
+        const root = vscode.workspace.workspaceFolders;
+        if (!root) {return;}
+        const script = vscode.Uri.file(path.join(context.extensionPath, "src", "script.js"));
+
+        const filePath = path.join(root[0].uri.fsPath, ".vscode", "history.json");
+        const lineHistorys : interfaces.ExeHistory = getLineHistorys(filePath);
         const lineHistorysHTML : interfaces.FileToHTML = getHTMLperFile(lineHistorys);
 
-        const htmlContent = lineHistorysHTML['hello.c'].join("");
+
+        const htmlContent = lineHistorysHTML[path.parse(currentFile).base].join("");
 
         // Set the webview's HTML content
         setHTMLcontent(panel, htmlContent, lineHeight);
@@ -32,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, lineHeight: number) {
     const css = getCSS(lineHeight);
+    const script = getScript();
     panel.webview.html = `
             <!DOCTYPE html>
             <html lang="en">
@@ -45,9 +52,11 @@ function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, lineHei
                     <div class="lineWrapper">
                     ${htmlContent}
                     </div>
+                    ${script}
                 </body>
             </html>
         `;
+    console.log("HTML Content:", panel.webview.html);
 }
 
 function createWebViewPanel() {
@@ -140,40 +149,18 @@ function getActiveDocument(): string {
 function getLineHistorys(path: string): interfaces.ExeHistory {
     const data = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
     const obj : interfaces.ExeHistory = JSON.parse(data);
-    return obj
+    return obj;
 }
 
 
-function getHistoryPerLine(lineHistorys: any): string[][] {
-    const historyPerLine: string[][] = [];
-    for (let i = 0; i < lineHistorys.length; i++) {
-        const historyEntry = lineHistorys[i];
-        const line = historyEntry.line;
-        if (historyPerLine[line] === undefined) {
-            historyPerLine[line] = [];
-        }
 
-        if (historyEntry.type === "assignment") {
-            historyPerLine[line].push(historyEntry.value as string);
-        } else {
-            historyPerLine[line].push(JSON.stringify(historyEntry.args));
-        }
-    }
-
-    // 0 pad empty lines
-    for (let i = 0; i < historyPerLine.length; i++) {
-        if (historyPerLine[i] === undefined) {
-            historyPerLine[i] = [];
-        }
-    }
-    return historyPerLine;
-}
 
 function getCSS(lineHeight: number): string {
     return `
         <style>
             .lineWrapper {
                 position: absolute;
+                width: 100%;
             }
             .line {
                 display: block;
@@ -181,6 +168,7 @@ function getCSS(lineHeight: number): string {
                 height: ${lineHeight}px;
                 position: relative;
                 overflow: hidden;
+                width: 100%;
             }
             .entry {
                 display: block;
@@ -188,17 +176,57 @@ function getCSS(lineHeight: number): string {
                 overflow: hidden;
                 max-height: ${lineHeight}px;
                 height: ${lineHeight}px;
-                margin-right: 10px;
+                max-width: 20px;
+                width: 20px;
+                text-align: center;
+                border: 1px solid red;
+            }
+            .line_highlight {
+                background-color: var(--vscode-editor-lineHighlightBackground) ;
+            }
+
+
         </style>
     `;
 }
 
-function getHTMLPerLine(historyPerLine: string[][]): string[] {
-    const htmlPerLine: string[] = [];
-    for (let i = 0; i < historyPerLine.length; i++) {
-        const line = historyPerLine[i];
-        const html = line.map((entry) => `<div class="entry">${entry}</div>`).join("");
-        htmlPerLine.push(html);
-    }
-    return htmlPerLine;
+// .line:nth-child(2n+1) {
+//     background-color: lightgray;
+// }
+
+function getScript(): string {
+
+
+    return `
+        <script>
+
+
+            function highlightLine(lineId) {
+                document.querySelectorAll(".line_highlight").forEach((e) => {
+                    e.classList.remove("line_highlight");
+                });
+                document.getElementById(lineId).classList.add("line_highlight");
+            }
+
+
+
+
+
+            const wrapper = document.querySelector(".lineWrapper");
+            for (let i = 0; i < wrapper.children.length; i++) {
+                const line = wrapper.children[i];
+                line.addEventListener("click", highlightLine.bind(null, line.id));
+            }
+
+            
+
+
+
+            console.log("script");
+
+
+
+        </script>
+    `;
 }
+
