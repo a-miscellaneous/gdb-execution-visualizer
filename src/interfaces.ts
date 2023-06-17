@@ -24,7 +24,7 @@ export interface ArgsHistoryValues{
 }
 
 export interface ArgsHistory{
-    functionName : number;
+    functionName : string;
     values : ArgsHistoryValues[];
 }
 

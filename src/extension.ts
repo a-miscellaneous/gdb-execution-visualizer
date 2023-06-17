@@ -214,7 +214,8 @@ function getScript(): string {
         <script>
             const MAX_WIDTH = 15;
 
-            var currentWidth = 20px;
+
+            var currentWidth = 20;
 
 
             function checkCollision(div1, div2) {
@@ -237,7 +238,6 @@ function getScript(): string {
 
                 }
             }
-
 
             function highlightLine(entry) {
                 document.querySelectorAll(".highlight").forEach((e) => {
