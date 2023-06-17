@@ -5,10 +5,10 @@ import * as utils from "./utils";
 import * as path from "path";
 
 
-
+const OFFSET_FACTOR = 10;
 
 export function activate(context: vscode.ExtensionContext) {
-    const disposable = vscode.commands.registerCommand( "extension.showHistory",  () => {
+    const disposable = vscode.commands.registerCommand("extension.showHistory", () => {
 
         const panel = createWebViewPanel();
         const lineHeight = getLineHeight();
@@ -18,12 +18,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 
         const root = vscode.workspace.workspaceFolders;
-        if (!root) {return;}
+        if (!root) { return; }
         const script = vscode.Uri.file(path.join(context.extensionPath, "src", "script.js"));
 
         const filePath = path.join(root[0].uri.fsPath, ".vscode", "history.json");
-        const lineHistorys : interfaces.ExeHistory = getLineHistorys(filePath);
-        const lineHistorysHTML : interfaces.FileToHTML = getHTMLperFile(lineHistorys);
+        const lineHistorys: interfaces.ExeHistory = getLineHistorys(filePath);
+        const lineHistorysHTML: interfaces.FileToHTML = getHTMLperFile(lineHistorys);
 
 
         const htmlContent = lineHistorysHTML[path.parse(currentFile).base].join("");
@@ -74,13 +74,13 @@ function createWebViewPanel() {
 export function deactivate() { }
 
 function getHTMLperFile(lineHistorys: interfaces.ExeHistory): interfaces.FileToHTML {
-    return utils.objMap(lineHistorys, (value : interfaces.LineMapping) => {
+    return utils.objMap(lineHistorys, (value: interfaces.LineMapping) => {
         return getHTMLperLine(value);
     });
 }
 
 function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
-    const newObj = utils.objMap(lineHistory, ( value : interfaces.LineHistory|interfaces.ArgsHistory, key: string) => {
+    const newObj = utils.objMap(lineHistory, (value: interfaces.LineHistory | interfaces.ArgsHistory, key: string) => {
         if ("functionName" in value) {
             return `<div class="line" id="line-${key}">${getHTMLperArgsHistory(value)}</div>`;
         } else {
@@ -103,13 +103,14 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
 
 function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
     // TODO: implement
-    return `<div class="entry column-width" id="name-${argsHistory.functionName}"> </div>`;
+    // return `<div class="entry column-width" id="name-${argsHistory.functionName}"> </div>`;
+    return `<div class="entry column-width" id="name-${argsHistory.functionName}"> TODO</div>`;
 }
 
 function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {
     const lineHistoryValues = lineHistory.values;
-    const lineHistoryValuesHTML = lineHistoryValues.map((value : interfaces.LineHistoryValues) => {
-        return `<div class="entry column-width" id="step-${value.step}">${value.value}</div>`;
+    const lineHistoryValuesHTML = lineHistoryValues.map((value: interfaces.LineHistoryValues) => {
+        return `<div class="entry column-width" id="step-${value.step}" style="left: ${value.step * OFFSET_FACTOR}px">${value.value}</div>`;
     });
     return lineHistoryValuesHTML.join("");
 }
@@ -148,7 +149,7 @@ function getActiveDocument(): string {
 
 function getLineHistorys(path: string): interfaces.ExeHistory {
     const data = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
-    const obj : interfaces.ExeHistory = JSON.parse(data);
+    const obj: interfaces.ExeHistory = JSON.parse(data);
     return obj;
 }
 
@@ -172,7 +173,7 @@ function getCSS(lineHeight: number): string {
             }
             .entry {
                 display: block;
-                float: left;
+                position: absolute;
                 overflow: hidden;
                 max-height: ${lineHeight}px;
                 height: ${lineHeight}px;
@@ -211,6 +212,33 @@ function getScript(): string {
 
     return `
         <script>
+            const MAX_WIDTH = 15;
+
+            var currentWidth = 20px;
+
+
+            function checkCollision(div1, div2) {
+                // Get the bounding rectangles of the div elements
+                const rect1 = div1.getBoundingClientRect();
+                const rect2 = div2.getBoundingClientRect();
+
+                // Check for collision
+                if (
+                rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom
+                ) {
+                // No collision
+                return null;
+                } else {
+                // Calculate overlap
+                return Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
+
+                }
+            }
+
+
             function highlightLine(entry) {
                 document.querySelectorAll(".highlight").forEach((e) => {
                     e.classList.remove("highlight");
@@ -222,10 +250,9 @@ function getScript(): string {
 
                 entry.classList.add("highlight");
                 entry.parentElement.classList.add("highlight");
+
                 column_highlight = document.createElement("div");
-                column_highlight.classList.add("highlight");
-                column_highlight.classList.add("column-width");
-                column_highlight.classList.add("column-highlight");
+                column_highlight.classList.add("highlight", "column-width", "column-highlight");
                 column_highlight.style.left = entry.offsetLeft + entry.offsetWidth + "px";
 
                 entry.appendChild(column_highlight);
