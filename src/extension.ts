@@ -103,13 +103,13 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
 
 function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
     // TODO: implement
-    return `<div class="entry" id="name-${argsHistory.functionName}"> </div>`;
+    return `<div class="entry column-width" id="name-${argsHistory.functionName}"> </div>`;
 }
 
 function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {
     const lineHistoryValues = lineHistory.values;
     const lineHistoryValuesHTML = lineHistoryValues.map((value : interfaces.LineHistoryValues) => {
-        return `<div class="entry" id="step-${value.step}">${value.value}</div>`;
+        return `<div class="entry column-width" id="step-${value.step}">${value.value}</div>`;
     });
     return lineHistoryValuesHTML.join("");
 }
@@ -176,13 +176,27 @@ function getCSS(lineHeight: number): string {
                 overflow: hidden;
                 max-height: ${lineHeight}px;
                 height: ${lineHeight}px;
-                max-width: 20px;
-                width: 20px;
                 text-align: center;
                 border: 1px solid red;
             }
-            .line_highlight {
+
+            .column-width {
+                width: 20px;
+                max-width: 20px;
+            }
+
+
+            .highlight {
                 background-color: var(--vscode-editor-lineHighlightBackground) ;
+            }
+
+            .column-highlight {
+                background-color: var(--vscode-editor-lineHighlightBackground) ;
+                height: 200vh;
+                position: fixed;
+                top: 0;
+                overflow: visible;
+                z-index: -1;
             }
 
 
@@ -190,41 +204,37 @@ function getCSS(lineHeight: number): string {
     `;
 }
 
-// .line:nth-child(2n+1) {
-//     background-color: lightgray;
-// }
+
 
 function getScript(): string {
 
 
     return `
         <script>
-
-
-            function highlightLine(lineId) {
-                document.querySelectorAll(".line_highlight").forEach((e) => {
-                    e.classList.remove("line_highlight");
+            function highlightLine(entry) {
+                document.querySelectorAll(".highlight").forEach((e) => {
+                    e.classList.remove("highlight");
                 });
-                document.getElementById(lineId).classList.add("line_highlight");
+
+                document.querySelectorAll(".column-highlight").forEach((e) => {
+                    e.remove();
+                });
+
+                entry.classList.add("highlight");
+                entry.parentElement.classList.add("highlight");
+                column_highlight = document.createElement("div");
+                column_highlight.classList.add("highlight");
+                column_highlight.classList.add("column-width");
+                column_highlight.classList.add("column-highlight");
+                column_highlight.style.left = entry.offsetLeft + entry.offsetWidth + "px";
+
+                entry.appendChild(column_highlight);
             }
 
 
-
-
-
-            const wrapper = document.querySelector(".lineWrapper");
-            for (let i = 0; i < wrapper.children.length; i++) {
-                const line = wrapper.children[i];
-                line.addEventListener("click", highlightLine.bind(null, line.id));
-            }
-
-            
-
-
-
-            console.log("script");
-
-
+            document.querySelectorAll(".entry").forEach((e) => {
+                e.addEventListener("click", highlightLine.bind(null, e));
+            });
 
         </script>
     `;
