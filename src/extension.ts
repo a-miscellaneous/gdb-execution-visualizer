@@ -86,7 +86,7 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
         if ("functionName" in value) {
             return `<div class="line" id="line-${key}">${getHTMLperArgsHistory(value)}</div>`;
         } else {
-            return `<div class="line" id="line-${key}">${getHTMLperLineHistory(value)}</div>`;
+            return `<div class="line" id="line-${key}-">${getHTMLperLineHistory(value)}</div>`;
         }
     });
 
@@ -112,7 +112,7 @@ function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
 function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {
     const lineHistoryValues = lineHistory.values;
     const lineHistoryValuesHTML = lineHistoryValues.map((value: interfaces.LineHistoryValues) => {
-        return `<div class="entry column-width" id="step-${value.step}" style="left: ${value.step * OFFSET_FACTOR}px">${value.value}</div>`;
+        return `<div class="entry column-width" id="step-${value.step}-value-${value.value}" style="left: ${value.step * OFFSET_FACTOR}px">${value.value}</div>`;
     });
     return lineHistoryValuesHTML.join("");
 }
@@ -259,12 +259,12 @@ function getScript(): string {
                 column_highlight.style.left = entry.offsetLeft + entry_width + "px";
 
                 document.body.insertBefore(column_highlight, document.body.firstChild);
-
-                document.querySelectorAll(".column-width").forEach((e) => {
-                    e.style.width = entry_width + 30 + "px";
-                    console.log(e);
-                });
-            }
+` +
+                // document.querySelectorAll(".column-width").forEach((e) => {
+                //     e.style.width = entry_width + 30 + "px";
+                //     e.style.maxWidth = entry_width + 30 + "px";
+                // });
+            `}
 
 
             document.querySelectorAll(".entry").forEach((e) => {
