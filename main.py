@@ -162,18 +162,27 @@ class argsHistory():
 
 
 class lineHistory():
-    values = []
-    var = None
 
     def __init__(self, var):
         self.var = var
         self.values = []
+        self.maxValue = float("-inf")
+        self.minValue = float("inf")
 
     def append(self, value, step, stackHeight):
         self.values.append({"value": value, "step": step, "stackHeight": stackHeight})
+        value = value
+        try:
+            value = float(value)
+        except:
+            return
+        self.maxValue = max(self.maxValue, value)
+        self.minValue = min(self.minValue, value)
 
     def asSerial(self):
-        return { "var": self.var, "values": self.values}
+        self.maxValue = self.maxValue if self.maxValue > float("-inf") else None
+        self.minValue = self.minValue if self.minValue < float("inf") else None
+        return { "var": self.var, "values": self.values, "maxValue": self.maxValue, "minValue": self.minValue}
 
 
 class exeHistory():

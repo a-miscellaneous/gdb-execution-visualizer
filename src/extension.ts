@@ -4,6 +4,8 @@ import * as interfaces from "./interfaces";
 import * as utils from "./utils";
 import * as path from "path";
 
+// TODO: hihlightin not dependent on actual width of the line
+
 
 const OFFSET_FACTOR = 10;
 
@@ -178,7 +180,7 @@ function getCSS(lineHeight: number): string {
                 max-height: ${lineHeight}px;
                 height: ${lineHeight}px;
                 text-align: center;
-                border: 1px solid red;
+                background-color: #46463f;
             }
 
             .column-width {
@@ -192,12 +194,11 @@ function getCSS(lineHeight: number): string {
             }
 
             .column-highlight {
-                background-color: var(--vscode-editor-lineHighlightBackground) ;
-                height: 200vh;
-                position: fixed;
-                top: 0;
-                overflow: visible;
+                position: absolute;
                 z-index: -1;
+                overflow: visible;
+
+
             }
 
 
@@ -213,8 +214,6 @@ function getScript(): string {
     return `
         <script>
             const MAX_WIDTH = 15;
-
-
             var currentWidth = 20;
 
 
@@ -250,12 +249,21 @@ function getScript(): string {
 
                 entry.classList.add("highlight");
                 entry.parentElement.classList.add("highlight");
+                const entry_width = entry.offsetWidth;
 
                 column_highlight = document.createElement("div");
-                column_highlight.classList.add("highlight", "column-width", "column-highlight");
-                column_highlight.style.left = entry.offsetLeft + entry.offsetWidth + "px";
+                column_highlight.classList.add("highlight", "column-highlight");
 
-                entry.appendChild(column_highlight);
+                column_highlight.style.width = entry_width + "px";
+                column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px";
+                column_highlight.style.left = entry.offsetLeft + entry_width + "px";
+
+                document.body.insertBefore(column_highlight, document.body.firstChild);
+
+                document.querySelectorAll(".column-width").forEach((e) => {
+                    e.style.width = entry_width + 30 + "px";
+                    console.log(e);
+                });
             }
 
 

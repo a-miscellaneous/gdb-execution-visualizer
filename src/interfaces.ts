@@ -15,6 +15,8 @@ export interface LineHistoryValues{
 export interface LineHistory{
     var : string;
     values : LineHistoryValues[];
+    maxValue : number | undefined;
+    minValue : number | undefined;
 }
 
 export interface ArgsHistoryValues{
