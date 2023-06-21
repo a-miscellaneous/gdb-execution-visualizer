@@ -31,9 +31,9 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
     // for each line
     const newObj = utils.objMap(lineHistory, (value: interfaces.LineHistory | interfaces.ArgsHistory, key: string) => {
         if ("functionName" in value) {
-            return `<div class="line" id="line-${key}">${getHTMLperArgsHistory(value)}</div>`;
+            return `<div class="line editor-height" id="line-${key}">${getHTMLperArgsHistory(value)}</div>`;
         } else {
-            return `<div class="line" id="line-${key}-max-${value.maxValue}-min-${value.minValue}">${getHTMLperLineHistory(value)}</div>`;
+            return `<div class="line editor-height" id="line-${key}-max-${value.maxValue}-min-${value.minValue}">${getHTMLperLineHistory(value)}</div>`;
         }
     });
 
@@ -41,7 +41,7 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
     const maxLine = Math.max(...Object.keys(newObj).map(Number));
     for (let i = 0; i < maxLine; i++) {
         if (!newObj[i]) {
-            newObj[i] = `<div class="line" id="line-${i}" ></div>`;
+            newObj[i] = `<div class="line editor-height" id="line-${i}" ></div>`;
         }
     }
 
@@ -51,13 +51,13 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
 
 function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
     // TODO: implement
-    return `<div class="entry column-width" id="name-${argsHistory.functionName}"> TODO</div>`;
+    return `<div class="entry column-width editor-height" id="name-${argsHistory.functionName}"> TODO</div>`;
 }
 
 function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {
     const lineHistoryValues = lineHistory.values;
     const lineHistoryValuesHTML = lineHistoryValues.map((value: interfaces.LineHistoryValues) => {
-        return `<div class="entry column-width" id="step-${value.step}-value-${value.value}" style="left: ${value.step * OFFSET_FACTOR}px">${value.value}</div>`;
+        return `<div class="entry column-width editor-height" id="step-${value.step}-value-${value.value}" style="left: ${value.step * OFFSET_FACTOR}px">${value.value}</div>`;
     });
     return lineHistoryValuesHTML.join("");
 }

@@ -1,0 +1,35 @@
+.lineWrapper {
+    position: absolute;
+    width: 100%;
+}
+
+.line {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.entry {
+    display: block;
+    position: absolute;
+    overflow: hidden;
+    text-align: center;
+    background-color: #46463f;
+}
+
+.column-width {
+    width: 20px;
+    max-width: 20px;
+}
+
+
+.highlight {
+    background-color: var(--vscode-editor-lineHighlightBackground);
+}
+
+.column-highlight {
+    position: absolute;
+    z-index: -1;
+    overflow: visible;
+}

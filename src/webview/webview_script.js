@@ -8,19 +8,10 @@ function checkCollision(div1, div2) {
     const rect2 = div2.getBoundingClientRect();
 
     // Check for collision
-    if (
-    rect1.right < rect2.left ||
-    rect1.left > rect2.right ||
-    rect1.bottom < rect2.top ||
-    rect1.top > rect2.bottom
-    ) {
-    // No collision
-    return null;
-    } else {
-    // Calculate overlap
-    return Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
-
+    if (rect1.right < rect2.left || rect1.left > rect2.right) {
+        return null;
     }
+    return Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
 }
 
 function getProportions(div) {
@@ -33,7 +24,7 @@ function getProportions(div) {
     return (min, value, max);
 }
 
-function highlightLine(entry) {
+function removeHighlight() {
     document.querySelectorAll(".highlight").forEach((e) => {
         e.classList.remove("highlight");
     });
@@ -41,8 +32,11 @@ function highlightLine(entry) {
     document.querySelectorAll(".column-highlight").forEach((e) => {
         e.remove();
     });
+}
 
-    entry.classList.add("highlight");
+function highlightLine(entry) {
+    removeHighlight();
+
     entry.parentElement.classList.add("highlight");
     const entryWidth = entry.offsetWidth;
 
@@ -66,3 +60,5 @@ function highlightLine(entry) {
 document.querySelectorAll(".entry").forEach((e) => {
     e.addEventListener("click", highlightLine.bind(null, e));
 });
+
+
