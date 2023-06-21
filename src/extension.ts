@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as interfaces from "./interfaces";
 import * as utils from "./utils";
 import * as path from "path";
 import * as htmlBuilder from "./html_builder";
@@ -21,6 +19,8 @@ export function activate(context: vscode.ExtensionContext) {
         const cssPath = panel.webview.asWebviewUri(cssOnDiskPath).toString();
 
         setHTMLcontent(panel, htmlContent, scriptPath, cssPath);
+
+        panel.webview.onDidReceiveMessage(webviewMessageHandler);
     });
 
     context.subscriptions.push(disposable);
@@ -73,3 +73,13 @@ function getCSS(lineHeight: number): string {
 }
 
 
+function webviewMessageHandler (message: any) {
+    switch (message.command) {
+        case "highlight":
+            console.log(message.id);
+            break;
+        default:
+            console.log("Unknown command: " + message.command);
+            break;
+    }
+}

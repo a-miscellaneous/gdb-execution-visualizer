@@ -1,6 +1,8 @@
 const MAX_WIDTH = 15;
 var currentWidth = 20;
 
+const vscode = acquireVsCodeApi();
+
 
 function checkCollision(div1, div2) {
     // Get the bounding rectangles of the div elements
@@ -34,6 +36,15 @@ function removeHighlight() {
     });
 }
 
+function notifyHighlight(id) {
+    vscode.postMessage({
+        command: "highlight",
+        id: id
+    });
+}
+
+
+
 function highlightLine(entry) {
     removeHighlight();
 
@@ -48,6 +59,8 @@ function highlightLine(entry) {
     column_highlight.style.left = entry.offsetLeft + entryWidth + "px";
 
     document.body.insertBefore(column_highlight, document.body.firstChild);
+
+    notifyHighlight(entry.id);
 
     // document.querySelectorAll(".column-width").forEach((e) => {
     //     e.style.width = entry_width + 30 + "px";
