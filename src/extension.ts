@@ -6,7 +6,7 @@ import * as htmlBuilder from "./html_builder";
 export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand("extension.showHistory", () => {
 
-        const panel = createWebViewPanel(context);
+        const panel = createWebViewPanel();
         const currentFile = path.parse(utils.getActiveDocument()).base;
 
         const historyPath = utils.getHistoryJsonPath();
@@ -48,7 +48,7 @@ function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, scriptP
         `;
 }
 
-function createWebViewPanel(context: vscode.ExtensionContext) {
+function createWebViewPanel() {
     return vscode.window.createWebviewPanel(
         "historyWebView", // id
         "History", //title
@@ -73,7 +73,7 @@ function getCSS(lineHeight: number): string {
 }
 
 
-function webviewMessageHandler (message: any) {
+function webviewMessageHandler(message: any) {
     switch (message.command) {
         case "highlight":
             console.log(message.id);
