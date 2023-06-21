@@ -37,5 +37,7 @@ export function getActiveDocument(): string {
 }
 
 export function changeHighlightedLine(id: string) {
-    const textEditor: vscode.TextEditor = vscode.window.visibleTextEditors[0];
+    const editor: vscode.TextEditor = vscode.window.visibleTextEditors[0];
+    const line: number = +id.split("-")[1] -1;
+    editor.selection = new vscode.Selection(line, 0, line, 0);
 }

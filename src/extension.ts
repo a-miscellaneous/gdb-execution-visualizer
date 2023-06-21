@@ -75,7 +75,8 @@ function getCSS(lineHeight: number): string {
 
 function webviewMessageHandler(message: any) {
     switch (message.command) {
-        case "highlight":
+        case "highlight-line":
+            utils.changeHighlightedLine(message.id);
             console.log(message.id);
             break;
         default:

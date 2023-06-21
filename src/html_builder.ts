@@ -2,7 +2,7 @@ import * as interfaces from "./interfaces";
 import * as fs from 'fs';
 import * as utils from "./utils";
 
-const OFFSET_FACTOR = 10;
+const OFFSET_FACTOR = 8;
 
 export function getPureHTML(historyPath: string): interfaces.FileToHTML {
     const obj = getOBJfromJSON(historyPath);
