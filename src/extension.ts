@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, scriptPath: string, cssPath:string) {
+function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, scriptPath: string, cssPath: string) {
     const css = getCSS(utils.getLineHeight());
     panel.webview.html = `
             <!DOCTYPE html>
@@ -46,7 +46,6 @@ function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, scriptP
                 </body>
             </html>
         `;
-    console.log("HTML Content:", panel.webview.html);
 }
 
 function createWebViewPanel(context: vscode.ExtensionContext) {
@@ -54,11 +53,7 @@ function createWebViewPanel(context: vscode.ExtensionContext) {
         "historyWebView", // id
         "History", //title
         vscode.ViewColumn.Beside, //spawn location
-        {   // Enable JavaScript and disable security restrictions cause VS Code is weird
-            enableScripts: true,
-            retainContextWhenHidden: true,
-            localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'src')]
-        }
+        { enableScripts: true }
     );
 }
 
