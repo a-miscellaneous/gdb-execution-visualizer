@@ -3,44 +3,42 @@ import * as fs from "fs";
 import * as interfaces from "./interfaces";
 import * as utils from "./utils";
 import * as path from "path";
+import * as htmlBuilder from "./html_builder";
 
-// TODO: hihlightin not dependent on actual width of the line
 
 
-const OFFSET_FACTOR = 10;
+
+
 
 export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand("extension.showHistory", () => {
 
-        const panel = createWebViewPanel();
-        const lineHeight = getLineHeight();
-        const currentFile = getActiveDocument();
-        console.log("Line Height:", lineHeight);
-        console.log("Current File:", currentFile);
-
-
+        const panel = createWebViewPanel(context);
+        const currentFile = path.parse(getActiveDocument()).base;
         const root = vscode.workspace.workspaceFolders;
         if (!root) { return; }
-        const script = vscode.Uri.file(path.join(context.extensionPath, "src", "script.js"));
-
-        const filePath = path.join(root[0].uri.fsPath, ".vscode", "history.json");
-        const lineHistorys: interfaces.ExeHistory = getLineHistorys(filePath);
-        const lineHistorysHTML: interfaces.FileToHTML = getHTMLperFile(lineHistorys);
 
 
-        const htmlContent = lineHistorysHTML[path.parse(currentFile).base].join("");
+        const historyPath = path.join(root[0].uri.fsPath, ".vscode", "history.json");
+
+
+
+
+        const htmlContent = htmlBuilder.getPureHTML(historyPath)[currentFile].join("");
+        const onDiskPath = vscode.Uri.joinPath(context.extensionUri, 'src', 'webview_script.js');
+        const scriptPath = panel.webview.asWebviewUri(onDiskPath);
 
         // Set the webview's HTML content
-        setHTMLcontent(panel, htmlContent, lineHeight);
+        const lineHeight = getLineHeight();
+        setHTMLcontent(panel, htmlContent, lineHeight, scriptPath);
 
     });
 
     context.subscriptions.push(disposable);
 }
 
-function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, lineHeight: number) {
+function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, lineHeight: number, scriptPath: vscode.Uri) {
     const css = getCSS(lineHeight);
-    const script = getScript();
     panel.webview.html = `
             <!DOCTYPE html>
             <html lang="en">
@@ -54,14 +52,14 @@ function setHTMLcontent(panel: vscode.WebviewPanel, htmlContent: string, lineHei
                     <div class="lineWrapper">
                     ${htmlContent}
                     </div>
-                    ${script}
+                    <script src="${scriptPath.toString()}"></script>
                 </body>
             </html>
         `;
     console.log("HTML Content:", panel.webview.html);
 }
 
-function createWebViewPanel() {
+function createWebViewPanel(context: vscode.ExtensionContext) {
     return vscode.window.createWebviewPanel(
         "historyWebView", // id
         "History", //title
@@ -69,53 +67,18 @@ function createWebViewPanel() {
         {   // Enable JavaScript and disable security restrictions cause VS Code is weird
             enableScripts: true,
             retainContextWhenHidden: true,
+            localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'src')]
         }
     );
 }
 
 export function deactivate() { }
 
-function getHTMLperFile(lineHistorys: interfaces.ExeHistory): interfaces.FileToHTML {
-    return utils.objMap(lineHistorys, (value: interfaces.LineMapping) => {
-        return getHTMLperLine(value);
-    });
-}
-
-function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
-    const newObj = utils.objMap(lineHistory, (value: interfaces.LineHistory | interfaces.ArgsHistory, key: string) => {
-        if ("functionName" in value) {
-            return `<div class="line" id="line-${key}">${getHTMLperArgsHistory(value)}</div>`;
-        } else {
-            return `<div class="line" id="line-${key}-">${getHTMLperLineHistory(value)}</div>`;
-        }
-    });
-
-    // 0 padding
-    const maxLine = Math.max(...Object.keys(newObj).map(Number));
-    for (let i = 0; i < maxLine; i++) {
-        if (!newObj[i]) {
-            newObj[i] = `<div class="line" id="line-${i}" ></div>`;
-        }
-    }
-
-    return Object.values(newObj);
 
 
-}
 
-function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
-    // TODO: implement
-    // return `<div class="entry column-width" id="name-${argsHistory.functionName}"> </div>`;
-    return `<div class="entry column-width" id="name-${argsHistory.functionName}"> TODO</div>`;
-}
 
-function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {
-    const lineHistoryValues = lineHistory.values;
-    const lineHistoryValuesHTML = lineHistoryValues.map((value: interfaces.LineHistoryValues) => {
-        return `<div class="entry column-width" id="step-${value.step}-value-${value.value}" style="left: ${value.step * OFFSET_FACTOR}px">${value.value}</div>`;
-    });
-    return lineHistoryValuesHTML.join("");
-}
+
 
 
 // TODO: accept other settings other than the default lineHeight of 0 [below 8 is a scalar] [more than 8 is a px value]
@@ -149,11 +112,7 @@ function getActiveDocument(): string {
 }
 
 
-function getLineHistorys(path: string): interfaces.ExeHistory {
-    const data = fs.readFileSync(path, { encoding: 'utf8', flag: 'r' });
-    const obj: interfaces.ExeHistory = JSON.parse(data);
-    return obj;
-}
+
 
 
 
@@ -206,72 +165,4 @@ function getCSS(lineHeight: number): string {
     `;
 }
 
-
-
-function getScript(): string {
-
-
-    return `
-        <script>
-            const MAX_WIDTH = 15;
-            var currentWidth = 20;
-
-
-            function checkCollision(div1, div2) {
-                // Get the bounding rectangles of the div elements
-                const rect1 = div1.getBoundingClientRect();
-                const rect2 = div2.getBoundingClientRect();
-
-                // Check for collision
-                if (
-                rect1.right < rect2.left ||
-                rect1.left > rect2.right ||
-                rect1.bottom < rect2.top ||
-                rect1.top > rect2.bottom
-                ) {
-                // No collision
-                return null;
-                } else {
-                // Calculate overlap
-                return Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
-
-                }
-            }
-
-            function highlightLine(entry) {
-                document.querySelectorAll(".highlight").forEach((e) => {
-                    e.classList.remove("highlight");
-                });
-
-                document.querySelectorAll(".column-highlight").forEach((e) => {
-                    e.remove();
-                });
-
-                entry.classList.add("highlight");
-                entry.parentElement.classList.add("highlight");
-                const entry_width = entry.offsetWidth;
-
-                column_highlight = document.createElement("div");
-                column_highlight.classList.add("highlight", "column-highlight");
-
-                column_highlight.style.width = entry_width + "px";
-                column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px";
-                column_highlight.style.left = entry.offsetLeft + entry_width + "px";
-
-                document.body.insertBefore(column_highlight, document.body.firstChild);
-` +
-                // document.querySelectorAll(".column-width").forEach((e) => {
-                //     e.style.width = entry_width + 30 + "px";
-                //     e.style.maxWidth = entry_width + 30 + "px";
-                // });
-            `}
-
-
-            document.querySelectorAll(".entry").forEach((e) => {
-                e.addEventListener("click", highlightLine.bind(null, e));
-            });
-
-        </script>
-    `;
-}
 
