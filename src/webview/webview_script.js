@@ -27,7 +27,7 @@ function getProportions(div) {
     if (!parent.includes("max")) { return; }
     const max = parent[parent.indexOf("max") + 1];
     const min = parent[parent.indexOf("min") + 1];
-    return (min, value, max);
+    return [min, value, max];
 }
 
 function removeHighlight() {
@@ -96,13 +96,52 @@ function findAllColisions() {
     return collisions;
 }
 
+
+function changeDivToBar(div, overlap) {
+    const oldWidth = div.offsetWidth;
+    div.style.width = oldWidth - overlap + "px";
+
+    const proportions = getProportions(div);
+    const min = proportions[0];
+    const value = proportions[1];
+    const max = proportions[2];
+
+    if (max === min) { return; } // only one constant value
+
+    var barHeight = null;
+    var barTop = null;
+
+
+    if (min <= 0 && max <= 0) { // only negative values
+        barHeight = (max - value) / (max - min) * 100;
+        barTop = 0;
+    } else if (min >= 0 && max >= 0) { // only positive values
+        barHeight = 100;
+        barTop = (max - value) / (max - min) * 100;
+    } else if (value >= 0) { // positive value between negative and positve values
+        barHeight = (max - value) / (max - min) * 100;
+        barHeight += (0 - min) / (max - min) * 100;
+        barHeight = 1 - barHeight;
+        barTop = (max - value) / (max - min) * 100;
+    } else if (value <= 0) { // negative value between negative and positve values
+        barTop = (max - 0) / (max - min) * 100;
+        barHeight = (value - min) / (max - min) * 100;
+        barHeight = 1 - (barHeight + barTop);
+    }
+    barTop = barTop === 100 ? 99 : barTop;
+    console.log(min, value, max);
+    console.log(barHeight, barTop);
+    div.innerHTML = "<div class='bar' style='height: " + barHeight + "%; top: " + barTop + "%;'></div>";
+
+}
+
+
 function handleColisions() {
     const collisions = findAllColisions();
     const colisionMap = getColisionMap(collisions);
+    console.log(colisionMap);
     for (var key in colisionMap) {
-        const div = document.getElementById(key);
-        const value = colisionMap[key];
-        const parent = div.parentElement.id.split("-");
+        changeDivToBar(document.getElementById(key), colisionMap[key]);
     }
 
 }
@@ -127,7 +166,7 @@ function getColisionMap(collisions) {
     for (var key in colisionMap) {
         var value = colisionMap[key];
         const len = value.length;
-        value = value.reduce(function(a, b){  return a + b; }) / len;
+        value = value.reduce(function (a, b) { return a + b; }) / len;
         colisionMap[key] = value;
     }
 

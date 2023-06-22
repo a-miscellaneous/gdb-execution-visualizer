@@ -33,3 +33,8 @@
     z-index: -1;
     overflow: visible;
 }
+
+.bar {
+    background-color: blueviolet;
+    position: relative;
+}
