@@ -90,7 +90,8 @@ function findAllColisions() {
 }
 
 function changeBarToText(div) {
-    const originalWidth = div.parentElement.classList[1].split("-").pop();
+    // TODO: cleanup
+    const originalWidth = div.parentElement.classList[2].split("-").pop();
     div.style.width = originalWidth + "px";
     div.style.maxWidth = originalWidth + "px";
     div.innerHTML = div.id.split("-").pop();
@@ -227,7 +228,6 @@ function initWidths() {
 function setStepFactor(factor) {
 
     STEP_FACTOR += factor;
-    console.log("setStepFactor", STEP_FACTOR);
     removeAllBars();
     const entries = document.querySelectorAll(".entry");
     for (const entry of entries) {
