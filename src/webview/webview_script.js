@@ -135,8 +135,6 @@ function changeDivToBar(div, overlap) {
         barHeight = 1 - (barHeight + barTop);
     }
     barTop = barTop === 100 ? 99 : barTop;
-    console.log(min, value, max);
-    console.log(barHeight, barTop);
     div.innerHTML = "<div class='bar' style='height: " + barHeight + "%; top: " + barTop + "%;'></div>";
 
 }
@@ -145,7 +143,6 @@ function changeDivToBar(div, overlap) {
 function handleColisions() {
     const collisions = findAllColisions();
     const colisionMap = getColisionMap(collisions);
-    console.log(colisionMap);
     for (var key in colisionMap) {
         changeDivToBar(document.getElementById(key), colisionMap[key]);
     }
@@ -212,6 +209,7 @@ function getMaxEntryWidth(line, font) {
 }
 
 function initWidths() {
+    console.log("initWidths");
     const entry = document.querySelectorAll(".entry")[0];
     const font = getCanvasFont(entry);
     const lines = document.querySelectorAll(".lineWrapper")[0].children;
@@ -226,8 +224,40 @@ function initWidths() {
     }
 }
 
+function setStepFactor(factor) {
+
+    STEP_FACTOR += factor;
+    console.log("setStepFactor", STEP_FACTOR);
+    removeAllBars();
+    const entries = document.querySelectorAll(".entry");
+    for (const entry of entries) {
+        const step = entry.id.split("-")[1];
+        entry.style.left = step * STEP_FACTOR + "px";
+    }
+    handleColisions();
+}
+
+function createZoomButtons() {
+    const zoomIn = document.createElement("button");
+    zoomIn.innerHTML = "+";
+    zoomIn.classList.add("zoom_button");
 
 
+    const zoomOut = document.createElement("button");
+    zoomOut.innerHTML = "-";
+    zoomOut.classList.add("zoom_button");
+
+
+    const zoomButtons = document.createElement("div");
+    zoomButtons.classList.add("zoomButtons");
+    zoomButtons.appendChild(zoomIn);
+    zoomButtons.appendChild(zoomOut);
+
+    document.body.appendChild(zoomButtons);
+
+    zoomIn.onclick = setStepFactor.bind(null, 1);
+    zoomOut.onclick = setStepFactor.bind(null, -1);
+}
 
 
 document.querySelectorAll(".entry").forEach((e) => {
@@ -237,6 +267,7 @@ document.querySelectorAll(".entry").forEach((e) => {
 // initialize width for all entries
 initWidths();
 handleColisions();
+createZoomButtons();
 
 
 

@@ -77,7 +77,6 @@ function webviewMessageHandler(message: any) {
     switch (message.command) {
         case "highlight-line":
             utils.changeHighlightedLine(message.id);
-            console.log(message.id);
             break;
         default:
             console.log("Unknown command: " + message.command);
