@@ -47,6 +47,7 @@ function highlightLine(entry) {
 
     removeHighlight();
 
+    entry.classList.add("highlight");
     entry.parentElement.classList.add("highlight");
     const entryWidth = entry.offsetWidth;
 
@@ -54,7 +55,7 @@ function highlightLine(entry) {
     column_highlight.classList.add("highlight", "column-highlight");
 
     column_highlight.style.width = entryWidth + "px";
-    column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px";
+    column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px"; // TODO: cleanup
     column_highlight.style.left = entry.getBoundingClientRect().left - document.body.getBoundingClientRect().left + "px";
 
     document.body.insertBefore(column_highlight, document.body.firstChild);
@@ -105,8 +106,7 @@ function removeAllBars() {
 
 
 function changeDivToBar(div, overlap) {
-    const oldWidth = div.offsetWidth;
-    div.style.width = oldWidth - overlap + "px";
+
 
     const proportions = getProportions(div);
     const min = proportions[0];
@@ -114,6 +114,9 @@ function changeDivToBar(div, overlap) {
     const max = proportions[2];
 
     if (max === min) { return; } // only one constant value
+
+    const oldWidth = div.offsetWidth;
+    div.style.width = oldWidth - overlap + "px";
 
     var barHeight = null;
     var barTop = null;
@@ -206,11 +209,10 @@ function getMaxEntryWidth(line, font) {
             maxWidth = width;
         }
     }
-    return Math.ceil(maxWidth);
+    return Math.ceil(maxWidth) + 4; // TODO remove base
 }
 
 function initWidths() {
-    console.log("initWidths");
     const entry = document.querySelectorAll(".entry")[0];
     const font = getCanvasFont(entry);
     const lines = document.querySelectorAll(".lineWrapper")[0].children;
@@ -235,6 +237,9 @@ function setStepFactor(factor) {
         entry.style.left = step * STEP_FACTOR + "px";
     }
     handleColisions();
+    const highlightedLine = document.getElementsByClassName("entry highlight")[0];
+    console.log(highlightedLine);
+    highlightLine(document.getElementsByClassName("entry highlight")[0]);
 }
 
 function createZoomButtons() {
