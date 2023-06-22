@@ -62,7 +62,7 @@ function highlightLine(entry) {
 
     column_highlight.style.width = entryWidth + "px";
     column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px";
-    column_highlight.style.left = entry.getBoundingClientRect().left + "px";
+    column_highlight.style.left = entry.getBoundingClientRect().left - document.body.getBoundingClientRect().left + "px";
 
     document.body.insertBefore(column_highlight, document.body.firstChild);
 
