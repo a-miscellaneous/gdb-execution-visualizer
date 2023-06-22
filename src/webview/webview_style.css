@@ -35,7 +35,7 @@
 }
 
 .bar {
-    background-color: blueviolet;
+    background-color: blueviolet; /* TODO: get apropriate color */
     position: relative;
 }
 
