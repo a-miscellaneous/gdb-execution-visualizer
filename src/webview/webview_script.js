@@ -1,9 +1,5 @@
-
-
-const MAX_WIDTH = 15;
-var currentWidth = 20;
-
 const vscode = acquireVsCodeApi();
+var STEP_FACTOR = 5;
 
 
 function checkCollision(div1, div2) {
@@ -40,7 +36,6 @@ function removeHighlight() {
     });
 }
 
-
 function notifyHighlight(entry) {
     vscode.postMessage({
         command: "highlight-line",
@@ -48,10 +43,8 @@ function notifyHighlight(entry) {
     });
 }
 
-
-
 function highlightLine(entry) {
-    handleColisions();
+
     removeHighlight();
 
     entry.parentElement.classList.add("highlight");
@@ -94,6 +87,19 @@ function findAllColisions() {
         collisions.push(...findColisionInline(children[number]));
     }
     return collisions;
+}
+
+function changeBarToText(div) {
+    const originalWidth = div.parentElement.classList[1].split("-").pop();
+    div.style.width = originalWidth + "px";
+    div.style.maxWidth = originalWidth + "px";
+    div.innerHTML = div.id.split("-").pop();
+}
+
+function removeAllBars() {
+    document.querySelectorAll(".bar").forEach((e) => {
+        changeBarToText(e.parentElement);
+    });
 }
 
 
@@ -173,12 +179,64 @@ function getColisionMap(collisions) {
     return colisionMap;
 }
 
+// https://stackoverflow.com/a/21015393
+function getTextWidth(text, font) {
+    const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+    const context = canvas.getContext("2d");
+    context.font = font;
+    return context.measureText(text).width;
+}
+
+function getCssStyle(element, prop) {
+    return window.getComputedStyle(element, null).getPropertyValue(prop);
+}
+
+function getCanvasFont(el) {
+    const fontWeight = getCssStyle(el, 'font-weight') || 'normal';
+    const fontSize = getCssStyle(el, 'font-size') || '16px';
+    const fontFamily = getCssStyle(el, 'font-family') || 'Times New Roman';
+
+    return `${fontWeight} ${fontSize} ${fontFamily}`;
+}
+
+function getMaxEntryWidth(line, font) {
+    var maxWidth = 0;
+    const entries = line.children;
+    for (const entry of entries) {
+        const width = getTextWidth(entry.innerHTML, font);
+        if (width > maxWidth) {
+            maxWidth = width;
+        }
+    }
+    return Math.ceil(maxWidth);
+}
+
+function initWidths() {
+    const entry = document.querySelectorAll(".entry")[0];
+    const font = getCanvasFont(entry);
+    const lines = document.querySelectorAll(".lineWrapper")[0].children;
+    for (const line of lines) {
+        const width = getMaxEntryWidth(line, font);
+        line.classList.add("max-width-" + width);
+        const entries = line.children;
+        for (const entry of entries) {
+            entry.style.width = width + "px";
+            entry.style.maxWidth = width + "px";
+        }
+    }
+}
+
+
 
 
 
 document.querySelectorAll(".entry").forEach((e) => {
     e.addEventListener("click", highlightLine.bind(null, e));
 });
+
+// initialize width for all entries
+initWidths();
+handleColisions();
 
 
 
