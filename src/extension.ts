@@ -10,7 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
         const currentFile = path.parse(utils.getActiveDocument()).base;
 
         const historyPath = utils.getHistoryJsonPath();
-        const htmlContent = htmlBuilder.getPureHTML(historyPath)[currentFile].join(""); // TODO: adapt to multiple files
+        const htmlContent = htmlBuilder.getPureHTML(historyPath);
 
         const scriptOnDiskPath = vscode.Uri.joinPath(context.extensionUri, 'src', 'webview', 'webview_script.js');
         const scriptPath = panel.webview.asWebviewUri(scriptOnDiskPath).toString();
@@ -18,7 +18,16 @@ export function activate(context: vscode.ExtensionContext) {
         const cssOnDiskPath = vscode.Uri.joinPath(context.extensionUri, 'src', 'webview', 'webview_style.css');
         const cssPath = panel.webview.asWebviewUri(cssOnDiskPath).toString();
 
-        setHTMLcontent(panel, htmlContent, scriptPath, cssPath);
+        setHTMLcontent(panel, htmlContent[currentFile].join(""), scriptPath, cssPath);
+
+
+        // TODO: test
+        vscode.window.onDidChangeTextEditorSelection(() => {
+            const currentFile = path.parse(utils.getActiveDocument()).base;
+            setHTMLcontent(panel, htmlContent[currentFile].join(""), scriptPath, cssPath);
+        });
+
+
 
         panel.webview.onDidReceiveMessage(webviewMessageHandler);
     });
