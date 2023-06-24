@@ -104,7 +104,6 @@ function removeAllBars() {
     });
 }
 
-
 function changeDivToBar(div, overlap) {
 
 

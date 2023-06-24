@@ -73,10 +73,15 @@ function getCSS(lineHeight: number): string {
 }
 
 
+
 function webviewMessageHandler(message: any) {
     switch (message.command) {
         case "highlight-line":
             utils.changeHighlightedLine(message.id);
+            const debugC = vscode.debug.activeDebugConsole;
+           
+            if (!debugC) { break; }
+            debugC.appendLine("-exec s");
             break;
         default:
             console.log("Unknown command: " + message.command);
