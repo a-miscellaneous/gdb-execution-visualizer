@@ -18,11 +18,11 @@ function checkCollision(div1, div2) {
 
 function getProportions(div) {
     const id = div.id;
-    const value = id.split("-").pop();
-    const parent = div.parentElement.id.split("-");
-    if (!parent.includes("max")) { return; }
-    const max = parent[parent.indexOf("max") + 1];
-    const min = parent[parent.indexOf("min") + 1];
+    const value = id.slice(id.indexOf("value-") + 6);
+    const parentElement = div.parentElement.id;
+    if (!parentElement.includes("max")) { return; }
+    const max = parentElement.slice(parentElement.indexOf("max") + 4, parentElement.indexOf("min") - 1);
+    const min = parentElement.slice(parentElement.indexOf("min") + 4);
     return [min, value, max];
 }
 
@@ -46,6 +46,7 @@ function notifyHighlight(entry) {
 function highlightLine(entry) {
 
     removeHighlight();
+    if (!entry) { return; }
 
     entry.classList.add("highlight");
     entry.parentElement.classList.add("highlight");
@@ -91,11 +92,10 @@ function findAllColisions() {
 }
 
 function changeBarToText(div) {
-    // TODO: cleanup
-    const originalWidth = div.parentElement.classList[2].split("-").pop();
+    const originalWidth = div.parentElement.classList[2].slice(div.parentElement.classList[2].indexOf("width-") + 6);
     div.style.width = originalWidth + "px";
     div.style.maxWidth = originalWidth + "px";
-    div.innerHTML = div.id.split("-").pop();
+    div.innerHTML = div.id.slice(div.id.indexOf("value-") + 6);
 }
 
 function removeAllBars() {
@@ -105,8 +105,6 @@ function removeAllBars() {
 }
 
 function changeDivToBar(div, overlap) {
-
-
     const proportions = getProportions(div);
     const min = proportions[0];
     const value = proportions[1];
@@ -128,14 +126,18 @@ function changeDivToBar(div, overlap) {
         barHeight = 100;
         barTop = (max - value) / (max - min) * 100;
     } else if (value >= 0) { // positive value between negative and positve values
-        barHeight = (max - value) / (max - min) * 100;
-        barHeight += (0 - min) / (max - min) * 100;
+        barHeight = (max - value) / (max - min);
+        barHeight += (0 - min) / (max - min);
         barHeight = 1 - barHeight;
+        barHeight *= 100;
         barTop = (max - value) / (max - min) * 100;
+        console.log(barHeight, barTop);
     } else if (value <= 0) { // negative value between negative and positve values
         barTop = (max - 0) / (max - min) * 100;
-        barHeight = (value - min) / (max - min) * 100;
-        barHeight = 1 - (barHeight + barTop);
+        barHeight = (value - min) / (max - min);
+        barHeight = 1 - (barHeight + barTop / 100);
+        barHeight *= 100;
+        console.log(barHeight, barTop);
     }
     barTop = barTop === 100 ? 99 : barTop;
     div.innerHTML = "<div class='bar' style='height: " + barHeight + "%; top: " + barTop + "%;'></div>";

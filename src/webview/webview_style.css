@@ -1,12 +1,13 @@
 .lineWrapper {
     position: absolute;
-    width: 100%;
+    overflow: scroll;
+    width: 90%;
 }
 
 .line {
     display: block;
     position: relative;
-    overflow: hidden;
+    overflow: show;
     width: 100%;
 }
 
