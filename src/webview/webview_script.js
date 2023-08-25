@@ -131,13 +131,11 @@ function changeDivToBar(div, overlap) {
         barHeight = 1 - barHeight;
         barHeight *= 100;
         barTop = (max - value) / (max - min) * 100;
-        console.log(barHeight, barTop);
     } else if (value <= 0) { // negative value between negative and positve values
         barTop = (max - 0) / (max - min) * 100;
         barHeight = (value - min) / (max - min);
         barHeight = 1 - (barHeight + barTop / 100);
         barHeight *= 100;
-        console.log(barHeight, barTop);
     }
     barTop = barTop === 100 ? 99 : barTop;
     div.innerHTML = "<div class='bar' style='height: " + barHeight + "%; top: " + barTop + "%;'></div>";
@@ -239,7 +237,6 @@ function setStepFactor(factor) {
     }
     handleColisions();
     const highlightedLine = document.getElementsByClassName("entry highlight")[0];
-    console.log(highlightedLine);
     highlightLine(document.getElementsByClassName("entry highlight")[0]);
 }
 
@@ -270,10 +267,17 @@ document.querySelectorAll(".entry").forEach((e) => {
     e.addEventListener("click", highlightLine.bind(null, e));
 });
 
+function initOffset() {
+    const firstLine = document.querySelectorAll("#line-0")[0];
+    // firstLine.classList.add("monaco-workbench");
+    const cssClass = 
+}
+
 // initialize width for all entries
 initWidths();
 handleColisions();
 createZoomButtons();
+initOffset();
 
 
 

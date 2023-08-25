@@ -7,6 +7,9 @@ export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand("extension.showHistory", () => {
 
         const panel = createWebViewPanel();
+        const editor = vscode.window.activeTextEditor;
+        
+
         const currentFile = path.parse(utils.getActiveDocument()).base;
 
         const historyPath = utils.getHistoryJsonPath();
@@ -26,6 +29,26 @@ export function activate(context: vscode.ExtensionContext) {
             const currentFile = path.parse(utils.getActiveDocument()).base;
             if (!currentFile) { return; }
             setHTMLcontent(panel, htmlContent[currentFile].join(""), scriptPath, cssPath);
+        });
+
+        // TODO
+        vscode.window.onDidChangeTextEditorVisibleRanges((e) => {
+            console.log(e);
+            
+
+            //calculate invisible lines
+            const invisibleLines = [];
+            var topLine = 0;
+            for (let i = 0; i < e.visibleRanges.length; i++) {
+                const range = e.visibleRanges[i];
+                for (let j = range.start.line; j <= range.end.line ; j++) { // + 1 for header
+                    invisibleLines.push(j);
+                }
+                topLine = range.end.line ;
+            }
+            console.log(invisibleLines);
+            panel.webview.postMessage({ command: "scroll", data: invisibleLines});
+
         });
 
 
