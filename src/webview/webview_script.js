@@ -56,17 +56,13 @@ function highlightLine(entry) {
     column_highlight.classList.add("highlight", "column-highlight");
 
     column_highlight.style.width = entryWidth + "px";
-    column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px"; // TODO: cleanup
+    column_highlight.style.height = document.getElementsByClassName("lineWrapper")[0].offsetHeight + "px";
     column_highlight.style.left = entry.getBoundingClientRect().left - document.body.getBoundingClientRect().left + "px";
 
     document.body.insertBefore(column_highlight, document.body.firstChild);
 
     notifyHighlight(entry);
 
-    // document.querySelectorAll(".column-width").forEach((e) => {
-    //     e.style.width = entry_width + 30 + "px";
-    //     e.style.maxWidth = entry_width + 30 + "px";
-    // });
 }
 
 function findColisionInline(line) {
