@@ -1,7 +1,7 @@
 .lineWrapper {
     position: absolute;
     overflow: scroll;
-    width: 90%;
+    width: 110%;
 }
 
 .line {
@@ -9,6 +9,13 @@
     position: relative;
     overflow: show;
     width: 100%;
+    z-index: 1;
+}
+
+.line:nth-child(even) {
+    --base-color: color-mix(in srgb, var(--vscode-editor-lineHighlightBackground),transparent 75%);
+    background-color: var(--base-color);
+    position: relative;
 }
 
 .entry {
@@ -16,7 +23,8 @@
     position: absolute;
     overflow: hidden;
     text-align: center;
-    background-color: #46463f;
+    background-color: var(--vscode-editor-lineHighlightBackground);
+    z-index: 5;
 }
 
 .column-width {
@@ -33,6 +41,7 @@
     position: absolute;
     z-index: -1;
     overflow: visible;
+    background-color: color-mix(in srgb, var(--vscode-editor-lineHighlightBackground),transparent 50%)
 }
 
 .bar {
@@ -47,10 +56,11 @@
     border: none;
     color: white;
     font-size: 16px;
-    z-index: 2;
+    z-index: 3;
 }
 
 .zoomButtons {
-    z-index: 3;
+    z-index: 4;
     position: absolute;
 }
+

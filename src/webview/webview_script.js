@@ -267,11 +267,7 @@ document.querySelectorAll(".entry").forEach((e) => {
     e.addEventListener("click", highlightLine.bind(null, e));
 });
 
-function initOffset() {
-    const firstLine = document.querySelectorAll("#line-0")[0];
-    // firstLine.classList.add("monaco-workbench");
-    const cssClass = 
-}
+
 
 // initialize width for all entries
 initWidths();
