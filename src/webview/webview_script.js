@@ -65,26 +65,27 @@ function highlightLine(entry) {
 
 }
 
-function findColisionInline(line) {
+function findCollisionInline(line) {
     const lineEntries = line.children;
-    const colisions = [];
+    const collisions = [];
     for (var number = 0; number < lineEntries.length; number++) {
-        const colision = checkCollision(lineEntries[number], lineEntries[number + 1]);
-        if (colision) {
-            colisions.push(colision);
+        const collision = checkCollision(lineEntries[number], lineEntries[number + 1]);
+        if (collision) {
+            collisions.push(collision);
         }
     }
-    return colisions;
+    return collisions;
 }
 
-function findAllColisions() {
+function findAllCollisions() {
     const lineWrappers = document.querySelectorAll(".lineWrapper")[0];
     const collisions = [];
     const children = lineWrappers.children;
-    for (var number = 0; number < children.length; number++) {
-        collisions.push(...findColisionInline(children[number]));
+    for (var number = 0; number < children.length; number++) { // HTMLCollection is not iterable with map
+        collisions.push(...findCollisionInline(children[number]));
     }
     return collisions;
+
 }
 
 function changeBarToText(div) {
@@ -139,40 +140,39 @@ function changeDivToBar(div, overlap) {
 }
 
 
-function handleColisions() {
-    const collisions = findAllColisions();
-    const colisionMap = getColisionMap(collisions);
-    for (var key in colisionMap) {
-        changeDivToBar(document.getElementById(key), colisionMap[key]);
+function handleCollisions() {
+    const collisions = findAllCollisions();
+    const collisionMap = getCollisionMap(collisions);
+    for (var key in collisionMap) {
+        changeDivToBar(document.getElementById(key), collisionMap[key]);
     }
-
 }
 
-function getColisionMap(collisions) {
-    var colisionMap = new Map();
+function getCollisionMap(collisions) {
+    var collisionMap = new Map();
     for (var number = 0; number < collisions.length; number++) {
 
-        if (colisionMap[collisions[number][0]]) {
-            colisionMap[collisions[number][0]].push(collisions[number][2]);
+        if (collisionMap[collisions[number][0]]) {
+            collisionMap[collisions[number][0]].push(collisions[number][2]);
         } else {
-            colisionMap[collisions[number][0]] = [collisions[number][2]];
+            collisionMap[collisions[number][0]] = [collisions[number][2]];
         }
 
-        if (colisionMap[collisions[number][1]]) {
-            colisionMap[collisions[number][1]].push(collisions[number][2]);
+        if (collisionMap[collisions[number][1]]) {
+            collisionMap[collisions[number][1]].push(collisions[number][2]);
         } else {
-            colisionMap[collisions[number][1]] = [collisions[number][2]];
+            collisionMap[collisions[number][1]] = [collisions[number][2]];
         }
     }
 
-    for (var key in colisionMap) {
-        var value = colisionMap[key];
+    for (var key in collisionMap) {
+        var value = collisionMap[key];
         const len = value.length;
         value = value.reduce(function (a, b) { return a + b; }) / len;
-        colisionMap[key] = value;
+        collisionMap[key] = value;
     }
 
-    return colisionMap;
+    return collisionMap;
 }
 
 // https://stackoverflow.com/a/21015393
@@ -231,7 +231,7 @@ function setStepFactor(factor) {
         const step = entry.id.split("-")[1];
         entry.style.left = step * STEP_FACTOR + "px";
     }
-    handleColisions();
+    handleCollisions();
     const highlightedLine = document.getElementsByClassName("entry highlight")[0];
     highlightLine(document.getElementsByClassName("entry highlight")[0]);
 }
@@ -267,9 +267,9 @@ document.querySelectorAll(".entry").forEach((e) => {
 
 // initialize width for all entries
 initWidths();
-handleColisions();
+handleCollisions();
 createZoomButtons();
-initOffset();
+
 
 
 
