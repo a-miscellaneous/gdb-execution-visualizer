@@ -67,37 +67,35 @@ class gdbHandler():
         return locs if locs else args
 
     def analyzeLine(self):
-        # save local frame with locals
-        currentHeight = self.getFrameAmount()
-        currentFrame = gdb.selected_frame()
-        currentLine = currentFrame.find_sal().line
-        currentLocals = self.getVars()
-        currentFile = currentFrame.find_sal().symtab.filename
-        currentLineStr = gdb.execute("frame ", to_string=True).split("\n")[
-            1].split("\t", 1)[1].strip()
-        currentStep = self.currentStep
+        while True:
+            # save local frame with locals
+            currentHeight = self.getFrameAmount()
+            currentFrame = gdb.selected_frame()
+            currentLine = currentFrame.find_sal().line
+            currentLocals = self.getVars()
+            currentFile = currentFrame.find_sal().symtab.filename
+            currentLineStr = gdb.execute("frame ", to_string=True).split("\n")[
+                1].split("\t", 1)[1].strip()
+            currentStep = self.currentStep
 
-        gdb.execute("step")
-        self.currentStep += 1
+            gdb.execute("step")
+            self.currentStep += 1
 
-        newFrame = gdb.selected_frame()
-        if currentFrame != newFrame:
+            newFrame = gdb.selected_frame()
+            if currentFrame != newFrame:
 
-            # if returned from a function call: kill self
-            if currentHeight > self.getFrameAmount():
-                return
-            # else
-            # if entered a new function call: start recursion
-            self.saveFunctionParams()
-            self.analyzeLine()
+                # if returned from a function call: kill self
+                if currentHeight > self.getFrameAmount():
+                    return
+                # else
+                # if entered a new function call: start recursion
+                self.saveFunctionParams()
+                self.analyzeLine()
 
-        # came back from recursion or just steped on new line
-        # find diferences and save them
-        self.saveAssiggnmentHistory(
-            currentLine, currentLocals, currentLineStr, currentHeight, currentStep, currentFile)
-
-        # continue recurse
-        self.analyzeLine()
+            # came back from recursion or just steped on new line
+            # find diferences and save them
+            self.saveAssiggnmentHistory(
+                currentLine, currentLocals, currentLineStr, currentHeight, currentStep, currentFile)
 
     def saveAssiggnmentHistory(self, line: int, oldlocals: dict, oldLineStr: str, stackHeight: int, currentStep: int, file: str):
         oldLineStr = " "+oldLineStr  # to exclude any " or '
@@ -206,6 +204,7 @@ class exeHistory():
         step = obj["step"] if "step" in obj else None
         stackHeight = obj["stackHeight"]
         stackName = obj["stackName"] if "stackName" in obj else None
+        print("appending line", line, " value:", value)
 
         if fileName not in self.history:  # first time
             self.history[fileName] = {}
@@ -251,6 +250,6 @@ if __name__ == "__main__":
 
     print("### printing history ###")
     with open("history.json", "w") as f:
-        json.dump(gdbHandler.history, f, indent=4, default=serializer)
+        json.dump(gdbHandler.history, f, default=serializer)
 
     gdb.execute("quit")
