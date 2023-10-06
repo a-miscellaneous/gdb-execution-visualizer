@@ -100,6 +100,9 @@ class gdbHandler():
     def saveAssiggnmentHistory(self, line: int, oldlocals: dict, oldLineStr: str, stackHeight: int, currentStep: int, file: str):
         oldLineStr = " "+oldLineStr  # to exclude any " or '
         newLocals = self.getVars()
+        print("oldlocals", oldlocals)
+        print("newLocals", newLocals)
+        print("oldLineStr", oldLineStr)
         if newLocals is None:
             return
 
@@ -115,19 +118,21 @@ class gdbHandler():
                 currentLine = gdb.selected_frame().find_sal().line
                 obj = {"line": currentLine, "value": newLocals[key], "var": key,
                        "file": file, "stackHeight": stackHeight, "step": currentStep}
-
+                print("created new scope var", obj)
                 # only accept the new var if it came from a for loop
                 if self.findForLoop(key):
                     self.history.append(obj)
-                    return
+                    print("appended obj", obj)
+                return
 
         # if no changes detected, attempt to find a var in the line and then save it
         assignmentRegX = r"([^\"\'])(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
         match = re.search(assignmentRegX, oldLineStr)
-        if match:
+        if match and match.group(3).strip in newLocals:
             res = match.group(3).strip()
             obj = {"line": line, "value": oldlocals[res], "var": res,
                    "file": file, "stackHeight": stackHeight, "step": currentStep}
+            print("appended obj no change", obj)
             self.history.append(obj)
 
     def findForLoop(self, var):
