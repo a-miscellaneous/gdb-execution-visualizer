@@ -31,40 +31,34 @@ class gdbHandler():
         self.saveFunctionParams()
         self.analyzeLine()
 
-    def getLocals(self):
-        infoLocals = gdb.execute("info locals", to_string=True)
-        if infoLocals == "No locals.\n":
-            return None
-        infoLocals = infoLocals.strip().split("\n")
-        result = {}
-        for i in infoLocals:
-            iArray = i.split(" ", 2)
-            if len(iArray) > 1:
-                result[iArray[0]] = iArray[2]
-
-        return result if len(result) > 0 else None
-
     def getArgs(self):
-        args = gdb.execute("info args", to_string=True)
-        if args == "No arguments.\n":
-            return
-        args = args.strip().split("\n")
+        frame = gdb.selected_frame()
+        block = frame.block()
         dic = {}
-        for arg in args:
-            s = arg.split("=", 1)
-            dic[s[0].strip()] = s[1].strip()
+
+        for symbol in block:
+            if symbol.is_argument:
+                dic[symbol.name] = symbol.value(frame).format_string()
 
         return dic if len(dic) > 0 else None
 
     def getVars(self):
-        locs = self.getLocals()
-        args = self.getArgs()
+        frame = gdb.selected_frame()
+        block = frame.block()
+        dic = {}
 
-        if locs and args:
-            args.update(locs)
-            return args
+        for symbol in block.global_block:
+            if symbol.is_variable:
+                dic[symbol.name] = symbol.value(frame).format_string()
 
-        return locs if locs else args
+        for symbol in block:
+            if symbol.is_variable:
+                dic[symbol.name] = symbol.value(frame).format_string()
+
+            if symbol.is_argument and symbol.name not in dic:
+                dic[symbol.name] = symbol.value(frame).format_string()
+
+        return dic if len(dic) > 0 else None
 
     def analyzeLine(self):
         while True:
