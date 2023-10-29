@@ -52,8 +52,7 @@ function getHTMLperLine(lineHistory: interfaces.LineMapping): string[] {
 
 
 function getHTMLperArgsHistory(argsHistory: interfaces.ArgsHistory): string {
-    // TODO: implement
-    return `<div class="entry column-width editor-height" id="name-${argsHistory.functionName}"> TODO</div>`;
+    return `<div class="entry column-width editor-height" id="name-${argsHistory.functionName}"> arg</div>`;
 }
 
 function getHTMLperLineHistory(lineHistory: interfaces.LineHistory): string {

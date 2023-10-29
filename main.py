@@ -51,12 +51,14 @@ class gdbHandler():
             if symbol.is_variable:
                 dic[symbol.name] = symbol.value(frame).format_string()
 
-        for symbol in block:
-            if symbol.is_variable:
-                dic[symbol.name] = symbol.value(frame).format_string()
+        while block:
+            for symbol in block:
+                if symbol.is_variable:
+                    dic[symbol.name] = symbol.value(frame).format_string()
 
-            if symbol.is_argument and symbol.name not in dic:
-                dic[symbol.name] = symbol.value(frame).format_string()
+                if symbol.is_argument and symbol.name not in dic:
+                    dic[symbol.name] = symbol.value(frame).format_string()
+            block = block.superblock
 
         return dic if len(dic) > 0 else None
 
@@ -122,8 +124,13 @@ class gdbHandler():
         # if no changes detected, attempt to find a var in the line and then save it
         assignmentRegX = r"([^\"\'])(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)(\+\=|\-\=|\*\=|\/\=|\%\=|\=)(\s*)([a-zA-Z0-9_]+|\-?[0-9]+(\.[0-9]+)?)"
         match = re.search(assignmentRegX, oldLineStr)
-        if match and match.group(3).strip in newLocals:
+        print('match', oldLineStr, )
+        if match:
             res = match.group(3).strip()
+            if newLocals.get(res) is None:
+                print("var " + match.group(3).strip() + " not in locals", )
+                return
+
             obj = {"line": line, "value": oldlocals[res], "var": res,
                    "file": file, "stackHeight": stackHeight, "step": currentStep}
             print("appended obj no change", obj)

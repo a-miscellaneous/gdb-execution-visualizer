@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
         setHTMLcontent(panel, htmlContent[currentFile].join(""), scriptPath, cssPath);
 
 
-        // TODO: test
+        
         vscode.window.onDidChangeTextEditorSelection(() => {
             const currentFile = path.parse(utils.getActiveDocument()).base;
             if (!currentFile) { return; }

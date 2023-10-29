@@ -204,7 +204,7 @@ function getMaxEntryWidth(line, font) {
             maxWidth = width;
         }
     }
-    return Math.ceil(maxWidth) + 4; // TODO remove base
+    return Math.ceil(maxWidth) + 4;
 }
 
 function initWidths() {
