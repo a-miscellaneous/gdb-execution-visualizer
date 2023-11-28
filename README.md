@@ -1,5 +1,7 @@
 # gdb-execution-visualizer
 
+A visual studio code extension with a python script to record the execution of a c program and visualize it in vscode
+
 ## Requirements
 
 - Python 3.x
@@ -35,6 +37,11 @@ gdb -x main.py
 ```
 
 move the history.json into the `.vscode` folder
+run using `Show History`
+
+## Results
+
+![result](images/vs_result.png)
 
 ## License
 
